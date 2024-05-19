@@ -41,7 +41,12 @@ namespace raBooth.Infrastructure.Services.FrameSource
                                      var frame = new Mat();
                                      if (_videoCapture.Read(frame))
                                      {
-                                         FrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(frame));
+                                         var cropH = 0;
+                                         var cropV = 80;
+                                         var croppedFrame = new Mat();
+
+                                         frame[cropV, frame.Height - cropV * 2, cropH, frame.Width - cropH * 2].CopyTo(croppedFrame);
+                                         _ = Task.Run(() => { FrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(croppedFrame)); });
                                      }
                                  }
                              }
@@ -50,6 +55,7 @@ namespace raBooth.Infrastructure.Services.FrameSource
                                  Console.WriteLine(e);
                                  throw;
                              }
+
                              _isRunning = false;
                              _videoCapture.Dispose();
                          });

@@ -1,8 +1,10 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System.IO;
+using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
+using raBooth.Core.Model;
 using raBooth.Core.Services.FrameSource;
 
 namespace raBooth.Ui.Views.Main
@@ -10,35 +12,59 @@ namespace raBooth.Ui.Views.Main
     public class MainViewModel : ObservableObject
     {
         private readonly IFrameSource _frameSource;
+        private static int frameW = 1024;
+        private static int frameH = 528;
+        private static int border = 20;
+
+        private CollageLayout Layout = new(new[]
+                                           {
+                                               new CollageItem(new Size(frameW, frameH), new Point(0, 0)),
+                                               new CollageItem(new Size(frameW/2-border/2, frameH), new Point(0, frameH + border)),
+                                               new CollageItem(new Size(frameW/2-border/2, frameH), new Point(frameW/2 + border/2, frameH + border))
+                                           });
+
+        private BitmapSource _preview;
 
         public MainViewModel(IFrameSource frameSource)
         {
             _frameSource = frameSource;
             frameSource.FrameAcquired += OnFrameAcquired;
             frameSource.Start();
-            Images.Add(Image1);
-            Images.Add(Image2);
-            Images.Add(Image3);
+            Layout.CurrentViewUpdated += OnCurrentViewUpdated;
+        }
+
+        private void OnCurrentViewUpdated(object? sender, CurrentViewUpdatedEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+                                          {
+                                              Preview = e.View.ToBitmapSource();
+                                          });
         }
 
         private void OnFrameAcquired(object? sender, FrameAcquiredEventArgs e)
         {
-            var currentImage = Images.FirstOrDefault(x => x.IsCaptured == false);
-            if (currentImage != null)
-            {
-                currentImage.Frame = e.Frame;
-            }
+            Layout.UpdateNextUncapturedItem(e.Frame);
         }
 
         public IRelayCommand CaptureCommand => new RelayCommand(ExecuteCaptureCommand);
         public IRelayCommand ResetCommand => new RelayCommand(ExecuteResetCommand);
+        public IRelayCommand SaveCommand => new RelayCommand(ExecuteSaveCommand);
+
+        private void ExecuteSaveCommand()
+        {
+            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            Layout.CapturedItemsView.SaveImage(Path.Combine(desktop,"booth.png"));
+        }
+
+        public BitmapSource Preview
+        {
+            get => _preview;
+            set => SetProperty(ref _preview, value);
+        }
 
         private void ExecuteResetCommand()
         {
-            foreach (var image in Images)
-            {
-                image.Clear();
-            }
+            Layout.UndoLastItemCapture();
         }
 
         public IRelayCommand StopCommand => new RelayCommand(ExecuteStopCommand);
@@ -50,49 +76,7 @@ namespace raBooth.Ui.Views.Main
 
         private void ExecuteCaptureCommand()
         {
-            var currentImage = Images.FirstOrDefault(x => x.IsCaptured == false);
-            if (currentImage != null)
-            {
-                currentImage.IsCaptured = true;
-            }
-        }
-
-        public CollageImage Image1 { get; set; } = new();
-        public CollageImage Image2 { get; set; } = new();
-        public CollageImage Image3 { get; set; } = new();
-        private List<CollageImage> Images { get; set; } = new();
-    }
-
-    public class CollageImage : ObservableObject
-    {
-        private Mat _frame;
-        private BitmapSource _preview;
-
-        public bool IsCaptured { get; set; }
-
-        public Mat Frame
-        {
-            get => _frame;
-            set
-            {
-                SetProperty(ref _frame, value.Clone());
-                App.Current?.Dispatcher?.Invoke(() => { Preview = _frame.ToBitmapSource(); });
-            }
-        }
-
-        public BitmapSource Preview
-        {
-            get => _preview;
-            set => SetProperty(ref _preview, value);
-        }
-
-        public void Clear()
-        {
-            App.Current?.Dispatcher?.Invoke(() =>
-                                            {
-                                                IsCaptured = false;
-                                                Preview = default;
-                                            });
+            Layout.CaptureItem();
         }
     }
 }
