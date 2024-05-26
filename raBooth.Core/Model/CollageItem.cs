@@ -34,7 +34,6 @@ public class CollageItem
     }
     public void UpdateSourceImage(Mat image)
     {
-
         image.CopyTo(SourceImage);
     }
 

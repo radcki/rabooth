@@ -11,6 +11,12 @@ namespace raBooth.Core.Helpers
     {
         public static void ResizeToCover(Mat image, Size size)
         {
+            if (image.Rows == 0 || image.Cols == 0)
+            {
+                var emptyImage = new Mat(size, MatType.CV_8UC3, new Scalar(255,255,255));
+                emptyImage.CopyTo(image);
+                return;
+            }
             var wScalingRatio = (float)size.Width / image.Cols;
             var hScalingRatio = (float)size.Height / image.Rows;
 
