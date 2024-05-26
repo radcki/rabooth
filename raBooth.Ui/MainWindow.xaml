@@ -4,32 +4,62 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:raBooth.Ui"
+        xmlns:layoutSelection="clr-namespace:raBooth.Ui.UserControls.LayoutSelection"
+        xmlns:main="clr-namespace:raBooth.Ui.Views.Main"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1080" Width="1080">
-    <Grid Background="LightGray">
+        Title="MainWindow" Height="1080" Width="1080"
+        d:DataContext="{d:DesignInstance main:MainViewModel, IsDesignTimeCreatable=True}">
+    <Grid Background="GhostWhite">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <StackPanel Orientation="Horizontal">
-
-                <Button Command="{Binding Path=CaptureCommand}" Margin="20">Capture</Button>
-                <Button Command="{Binding Path=ResetCommand}" Margin="20">Reset</Button>
-                <Button Command="{Binding Path=StopCommand}" Margin="20">Stop</Button>
-                <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="1" Margin="20">
-            <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
+        <Grid Grid.Row="0" Background="White">
+            <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" Color="LightGray" />
                 </Border.Effect>
-                <Viewbox Stretch="Uniform">
-                <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
-            </Viewbox>
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding Path=CaptureCommand}" Margin="20">Capture</Button>
+                    <Button Command="{Binding Path=ResetCommand}" Margin="20">Reset</Button>
+                    <Button Command="{Binding Path=StopCommand}" Margin="20">Stop</Button>
+                    <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
+                </StackPanel>
             </Border>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
+
+                <Grid  Margin="50">
+                    <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="20"  Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" Color="LightGray" />
+                    </Border.Effect>
+                    <Viewbox Stretch="Uniform">
+                        <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
+                    </Viewbox>
+                </Border>
+            </Grid>
+            <Grid Grid.Row="1">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                    <Button FontSize="20" Background="White" Command="{Binding Path=CancelCommand}">
+                        <TextBlock Margin="10">Anuluj</TextBlock>
+                    </Button>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 

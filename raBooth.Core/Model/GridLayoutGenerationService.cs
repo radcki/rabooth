@@ -2,10 +2,20 @@
 
 namespace raBooth.Core.Model;
 
-public class GridLayoutItemsGenerationService : ILayoutItemsGenerationService
+public class GridLayoutGenerationService : ILayoutGenerationService
 {
-    
-    public IEnumerable<CollageItem> GenerateItems(CollageLayoutDefinition layoutDefinition)
+    public CollageLayout GenerateLayout(CollageLayoutDefinition layoutDefinition)
+    {
+        var layout = new CollageLayout(layoutDefinition);
+        foreach (var layoutItem in GenerateItems(layoutDefinition))
+        {
+            layout.AddItem(layoutItem);
+        }
+
+        return layout;
+    }
+
+    private IEnumerable<CollageItem> GenerateItems(CollageLayoutDefinition layoutDefinition)
     {
         var horizontalDividersCount = 2 + (layoutDefinition.Rows.Count - 1);
         decimal rowsHeightRatioSum = layoutDefinition.Rows.Select(x => x.HeightRatio).DefaultIfEmpty(0).Sum();

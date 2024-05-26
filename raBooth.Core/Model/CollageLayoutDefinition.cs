@@ -6,9 +6,10 @@ namespace raBooth.Core.Model
 {
     public class CollageLayoutDefinition
     {
-
-        public Size2f SizeInMm { get; init; } = new(100, 148);
-        public float StrokeWidthInMm { get; init; } = 4f;
+        public float WidthInMm { get; init; }
+        public float HeightInMm { get; init; }
+        public Size2f SizeInMm => new (WidthInMm, HeightInMm);
+        public float StrokeWidthInMm { get; init; }
         public int Dpi { get; init; } = 300;
         public Size Size => UnitConversion.SizeInMmToPixelSize(SizeInMm, Dpi);
         public int StrokeWidth => (int)UnitConversion.MillimetersToPixels(StrokeWidthInMm, Dpi);
@@ -21,7 +22,7 @@ namespace raBooth.Core.Model
     {
 
         public int HeightRatio { get; init; }
-        public List<CollageRowItemDefinition> Items { get; init; }
+        public List<CollageRowItemDefinition> Items { get; init; } = new();
     }
 
     public class CollageRowItemDefinition

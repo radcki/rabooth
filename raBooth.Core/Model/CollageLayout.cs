@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using OpenCvSharp;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace raBooth.Core.Model;
 
@@ -17,15 +16,20 @@ public class CollageLayout
     private ConcurrentQueue<CollageItem> UncapturedItems { get; set; } = [];
     private Stack<CollageItem> CapturedItems { get; set; } = [];
     private Mat ViewWithCapturedItems { get; set; }
+
     private Mat GetCanvas()
     {
-        return new Mat(Definition.Size, MatType.CV_8UC3, new Scalar(255, 255, 255));
+        var canvas = new Mat(Definition.Size, MatType.CV_8UC3, new Scalar(255, 255, 255));
+        var mask = GetItemsMask();
+        canvas.SetTo(new Scalar(245, 245, 245), mask);
+        return canvas;
     }
 
     public void AddItem(CollageItem item)
     {
         Items.Add(item);
         UncapturedItems.Enqueue(item);
+        RedrawViewWithCapturedItems();
     }
 
     public void CaptureNextItem()
@@ -55,6 +59,16 @@ public class CollageLayout
         return view;
     }
 
+    public Mat GetItemsMask()
+    {
+        var mask = new Mat(Definition.Size, MatType.CV_8UC1, new Scalar(0, 0, 0));
+        foreach (var item in Items)
+        {
+            mask[item.Area].SetTo(new Scalar(1));
+        }
+        return mask;
+    }
+
     public void UndoLastItemCapture()
     {
         if (!CapturedItems.TryPop(out var item))
@@ -71,14 +85,24 @@ public class CollageLayout
         RedrawViewWithCapturedItems();
     }
 
+    public void Clear()
+    {
+        var newUncapturedItemsQueue = new ConcurrentQueue<CollageItem>();
+        CapturedItems.Clear();
+        foreach (var item in Items)
+        {
+            item.ClearSourceImage();
+            newUncapturedItemsQueue.Enqueue(item);
+        }
+        UncapturedItems = newUncapturedItemsQueue; 
+        RedrawViewWithCapturedItems();
+    }
+
     private void DrawItemOnCanvas(Mat canvas, CollageItem item)
     {
         var itemView = item.GetImage();
 
         itemView.CopyTo(canvas[item.Area]);
-
-        //Cv2.ImShow("a", canvas);
-        //Cv2.WaitKey(0);
     }
 
     private void RedrawViewWithCapturedItems()
