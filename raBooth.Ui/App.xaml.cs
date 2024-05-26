@@ -4,8 +4,11 @@ using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using raBooth.Core.Model;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Infrastructure.Services.FrameSource;
+using raBooth.Ui.Configuration;
 using raBooth.Ui.Views.Main;
 
 namespace raBooth.Ui
@@ -35,10 +38,13 @@ namespace raBooth.Ui
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<WebcamFrameSourceConfiguration>(configuration.GetSection(nameof(WebcamFrameSourceConfiguration)));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebcamFrameSourceConfiguration>>().Value);
+            services.Configure<LayoutsConfiguration>(configuration.GetSection(nameof(LayoutsConfiguration)));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<LayoutsConfiguration>>().Value);
 
-            services.AddTransient<WebcamFrameSourceConfiguration>();
-            services.AddTransient(typeof(MainWindow));
+            services.AddTransient<ILayoutItemsGenerationService, GridLayoutItemsGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
+            services.AddTransient<MainWindow>();
             services.AddSingleton<MainViewModel>();
         }
     }

@@ -10,7 +10,7 @@ namespace raBooth.Infrastructure.Services.FrameSource
 {
     public class WebcamFrameSourceConfiguration
     {
-        public int DeviceId { get; init; } = 3;
+        public int DeviceId { get; init; }
     }
 
     public class WebcamFrameSource : IFrameSource

@@ -6,44 +6,53 @@ using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 using raBooth.Core.Model;
 using raBooth.Core.Services.FrameSource;
+using raBooth.Ui.Configuration;
 
 namespace raBooth.Ui.Views.Main
 {
     public class MainViewModel : ObservableObject
     {
         private readonly IFrameSource _frameSource;
-        private static int frameW = 1024;
-        private static int frameH = 528;
-        private static int border = 20;
+        private readonly ILayoutItemsGenerationService _gridLayoutItemsGenerationService;
 
-        private CollageLayout Layout = new(new[]
-                                           {
-                                               new CollageItem(new Size(frameW, frameH), new Point(0, 0)),
-                                               new CollageItem(new Size(frameW/2-border/2, frameH), new Point(0, frameH + border)),
-                                               new CollageItem(new Size(frameW/2-border/2, frameH), new Point(frameW/2 + border/2, frameH + border))
-                                           });
+        private LayoutsConfiguration _layoutsConfiguration;
+        private CollageLayout _layout { get; set; }
 
         private BitmapSource _preview;
 
-        public MainViewModel(IFrameSource frameSource)
+        public MainViewModel(IFrameSource frameSource, ILayoutItemsGenerationService gridLayoutItemsGenerationService, LayoutsConfiguration layoutsConfiguration)
         {
             _frameSource = frameSource;
+            _gridLayoutItemsGenerationService = gridLayoutItemsGenerationService;
+            _layoutsConfiguration = layoutsConfiguration;
+            _layout = PrepareLayout(layoutsConfiguration.LayoutDefinitions.FirstOrDefault());
+
             frameSource.FrameAcquired += OnFrameAcquired;
             frameSource.Start();
-            Layout.CurrentViewUpdated += OnCurrentViewUpdated;
+
         }
 
-        private void OnCurrentViewUpdated(object? sender, CurrentViewUpdatedEventArgs e)
+        private CollageLayout PrepareLayout(CollageLayoutDefinition definition)
         {
-            App.Current.Dispatcher.Invoke(() =>
-                                          {
-                                              Preview = e.View.ToBitmapSource();
-                                          });
+            var layout = new CollageLayout(definition);
+            foreach (var layoutItem in _gridLayoutItemsGenerationService.GenerateItems(definition))
+            {
+                layout.AddItem(layoutItem);
+            }
+
+            return layout;
         }
 
         private void OnFrameAcquired(object? sender, FrameAcquiredEventArgs e)
         {
-            Layout.UpdateNextUncapturedItem(e.Frame);
+            _layout.UpdateNextUncapturedItemSourceImage(e.Frame);
+            var previewMat = _layout.GetViewWithNextUncapturedItemPreview();
+            
+            App.Current.Dispatcher.Invoke(() =>
+                                          {
+                                              Preview = previewMat.ToBitmapSource();
+                                          });
+
         }
 
         public IRelayCommand CaptureCommand => new RelayCommand(ExecuteCaptureCommand);
@@ -53,7 +62,7 @@ namespace raBooth.Ui.Views.Main
         private void ExecuteSaveCommand()
         {
             var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            Layout.CapturedItemsView.SaveImage(Path.Combine(desktop,"booth.png"));
+            _layout.GetViewWithNextUncapturedItemPreview().SaveImage(Path.Combine(desktop, "booth.png"));
         }
 
         public BitmapSource Preview
@@ -64,7 +73,7 @@ namespace raBooth.Ui.Views.Main
 
         private void ExecuteResetCommand()
         {
-            Layout.UndoLastItemCapture();
+            _layout.UndoLastItemCapture();
         }
 
         public IRelayCommand StopCommand => new RelayCommand(ExecuteStopCommand);
@@ -76,7 +85,7 @@ namespace raBooth.Ui.Views.Main
 
         private void ExecuteCaptureCommand()
         {
-            Layout.CaptureItem();
+            _layout.CaptureNextItem();
         }
     }
 }

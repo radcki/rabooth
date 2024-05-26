@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:raBooth.Ui"
         mc:Ignorable="d"
         Title="MainWindow" Height="1080" Width="1080">
-    <Grid Background="White">
+    <Grid Background="LightGray">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -21,10 +21,15 @@
                 <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="1">
-            <Viewbox Stretch="Uniform">
+        <Grid Grid.Row="1" Margin="20">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" Color="LightGray" />
+                </Border.Effect>
+                <Viewbox Stretch="Uniform">
                 <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
             </Viewbox>
+            </Border>
         </Grid>
     </Grid>
 

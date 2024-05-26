@@ -1,131 +1,93 @@
 ﻿using System.Collections.Concurrent;
 using OpenCvSharp;
+using static System.Net.Mime.MediaTypeNames;
 
-namespace raBooth.Core.Model
+namespace raBooth.Core.Model;
+
+public class CollageLayout
 {
-    public class CollageLayout
+    public CollageLayout(CollageLayoutDefinition definition)
     {
-        public CollageLayout(IEnumerable<CollageItem> collageItems)
+        Definition = definition;
+        RedrawViewWithCapturedItems();
+    }
+
+    public CollageLayoutDefinition Definition { get; private set; }
+    private List<CollageItem> Items { get; } = [];
+    private ConcurrentQueue<CollageItem> UncapturedItems { get; set; } = [];
+    private Stack<CollageItem> CapturedItems { get; set; } = [];
+    private Mat ViewWithCapturedItems { get; set; }
+    private Mat GetCanvas()
+    {
+        return new Mat(Definition.Size, MatType.CV_8UC3, new Scalar(255, 255, 255));
+    }
+
+    public void AddItem(CollageItem item)
+    {
+        Items.Add(item);
+        UncapturedItems.Enqueue(item);
+    }
+
+    public void CaptureNextItem()
+    {
+        if (!UncapturedItems.TryDequeue(out var item))
+            return;
+
+        DrawItemOnCanvas(ViewWithCapturedItems, item);
+        CapturedItems.Push(item);
+    }
+
+    public void UpdateNextUncapturedItemSourceImage(Mat image)
+    {
+        if (UncapturedItems.TryPeek(out var item))
         {
-            foreach (var collageItem in collageItems)
-            {
-                Items.Add(collageItem);
-                UncapturedItems.Enqueue(collageItem);
-            }
-
-            CurrentView = GetView(Items);
-        }
-
-        public Mat CapturedItemsView { get; private set; }
-        private Mat CurrentView { get; set; }
-
-        private List<CollageItem> Items { get; set; } = new();
-        private ConcurrentQueue<CollageItem> CapturedItems { get; set; } = new();
-        private ConcurrentQueue<CollageItem> UncapturedItems { get; set; } = new();
-        public event EventHandler<CurrentViewUpdatedEventArgs> CurrentViewUpdated;
-
-        public void CaptureItem()
-        {
-            if (UncapturedItems.TryDequeue(out var item))
-            {
-                CapturedItems.Enqueue(item);
-            }
-
-            CapturedItemsView = GetView(CapturedItems);
-        }
-
-        public void Reset()
-        {
-            CapturedItems.Clear();
-            UncapturedItems.Clear();
-            foreach (var collageItem in Items)
-            {
-                collageItem.Clear();
-                UncapturedItems.Enqueue(collageItem);
-            }
-        }
-
-        public void UndoLastItemCapture()
-        {
-            if (CapturedItems.TryDequeue(out var capturedItem))
-            {
-                var newUncapturedItemsQueue = new ConcurrentQueue<CollageItem>();
-                newUncapturedItemsQueue.Enqueue(capturedItem);
-                foreach (var uncapturedItem in UncapturedItems)
-                {
-                    newUncapturedItemsQueue.Enqueue(uncapturedItem);
-                }
-
-                UncapturedItems = newUncapturedItemsQueue;
-                foreach (var uncapturedItem in UncapturedItems)
-                {
-                    uncapturedItem.Clear();
-                }
-            }
-
-            CapturedItemsView = GetView(CapturedItems);
-            CapturedItemsView.CopyTo(CurrentView);
-        }
-
-        public void UpdateNextUncapturedItem(Mat frame)
-        {
-            if (UncapturedItems.TryPeek(out var item))
-            {
-                item.UpdateImage(frame);
-                DrawItemToView(CurrentView, item);
-                CurrentViewUpdated?.Invoke(this, new CurrentViewUpdatedEventArgs(CurrentView));
-            }
-        }
-
-        private Mat GetView(IEnumerable<CollageItem> itemsToDraw)
-        {
-            var maxX = Items.Select(x => x.Position.X + x.Size.Width).DefaultIfEmpty(0).Max();
-            var maxY = Items.Select(x => x.Position.Y + x.Size.Height).DefaultIfEmpty(0).Max();
-            var view = new Mat(new Size(maxX, maxY), MatType.CV_8UC3, new Scalar(255, 255,255));
-            foreach (var collageItem in itemsToDraw)
-            {
-                DrawItemToView(view, collageItem);
-            }
-
-            return view;
-        }
-
-        private void DrawItemToView(Mat image, CollageItem itemToDraw)
-        {
-            itemToDraw.Image.CopyTo(image[itemToDraw.Area]);
+            item.UpdateSourceImage(image);
         }
     }
 
-    public record CurrentViewUpdatedEventArgs(Mat View);
-
-    public class CollageItem
+    public Mat GetViewWithNextUncapturedItemPreview()
     {
-        public CollageItem(Size size, Point position)
+        var view = ViewWithCapturedItems.Clone();
+        if (UncapturedItems.TryPeek(out var item))
         {
-            Size = size;
-            Position = position;
-            Image = new Mat(Size, MatType.CV_8UC3, new Scalar(255, 255, 255));
+            DrawItemOnCanvas(view, item);
+        }
+        return view;
+    }
+
+    public void UndoLastItemCapture()
+    {
+        if (!CapturedItems.TryPop(out var item))
+            return;
+        item.ClearSourceImage();
+        var newUncapturedItemsQueue = new ConcurrentQueue<CollageItem>();
+        newUncapturedItemsQueue.Enqueue(item);
+        foreach (var uncapturedItem in UncapturedItems)
+        {
+            newUncapturedItemsQueue.Enqueue(uncapturedItem);
         }
 
-        public Point Position { get; init; }
+        UncapturedItems = newUncapturedItemsQueue;
+        RedrawViewWithCapturedItems();
+    }
 
-        public Size Size { get; init; }
-        public Mat Image { get; private set; }
-        public Rect Area => new(Position, Size);
+    private void DrawItemOnCanvas(Mat canvas, CollageItem item)
+    {
+        var itemView = item.GetImage();
 
-        public void UpdateImage(Mat image)
+        itemView.CopyTo(canvas[item.Area]);
+
+        //Cv2.ImShow("a", canvas);
+        //Cv2.WaitKey(0);
+    }
+
+    private void RedrawViewWithCapturedItems()
+    {
+        var canvas = GetCanvas();
+        foreach (var item in CapturedItems)
         {
-            var center = image.Size();
-            var w = Image.Width;
-            var h = Image.Height;
-            var x = center.Width / 2 - w / 2;
-            var y = center.Height / 2 - h / 2;
-            image[y, y + h, x, x + w].CopyTo(Image);
+            DrawItemOnCanvas(canvas, item);
         }
-
-        public void Clear()
-        {
-            Image = new Mat(Size, MatType.CV_8UC3, new Scalar(255, 255, 255));
-        }
+        ViewWithCapturedItems = canvas;
     }
 }
