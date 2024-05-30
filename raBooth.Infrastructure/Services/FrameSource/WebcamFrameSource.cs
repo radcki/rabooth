@@ -19,6 +19,7 @@ namespace raBooth.Infrastructure.Services.FrameSource
         private CancellationTokenSource _cancellationTokenSource;
         private bool _isRunning = false;
         private VideoCapture _videoCapture;
+        private Mat _latestFrame;
 
         public WebcamFrameSource(WebcamFrameSourceConfiguration configuration)
         {
@@ -46,7 +47,8 @@ namespace raBooth.Infrastructure.Services.FrameSource
                                          var croppedFrame = new Mat();
 
                                          frame[cropV, frame.Height - cropV * 2, cropH, frame.Width - cropH * 2].CopyTo(croppedFrame);
-                                         _ = Task.Run(() => { FrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(croppedFrame)); });
+                                         _latestFrame = croppedFrame;
+                                         _ = Task.Run(() => { LiveViewFrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(croppedFrame)); });
                                      }
                                  }
                              }
@@ -76,7 +78,16 @@ namespace raBooth.Infrastructure.Services.FrameSource
         }
 
         /// <inheritdoc />
-        public event EventHandler<FrameAcquiredEventArgs>? FrameAcquired;
+        public void CaptureStillImage()
+        {
+            StillImageCaptured?.Invoke(this, new FrameAcquiredEventArgs(_latestFrame));
+        }
+
+        /// <inheritdoc />
+        public event EventHandler<FrameAcquiredEventArgs>? LiveViewFrameAcquired;
+
+        /// <inheritdoc />
+        public event EventHandler<FrameAcquiredEventArgs>? StillImageCaptured;
 
         #region IDisposable
 

@@ -9,57 +9,130 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="1080" Width="1080"
         d:DataContext="{d:DesignInstance main:MainViewModel, IsDesignTimeCreatable=True}">
-    <Grid Background="GhostWhite">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="White">
-            <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10" Color="LightGray" />
-                </Border.Effect>
-                <StackPanel Orientation="Horizontal">
-                    <Button Command="{Binding Path=CaptureCommand}" Margin="20">Capture</Button>
-                    <Button Command="{Binding Path=ResetCommand}" Margin="20">Reset</Button>
-                    <Button Command="{Binding Path=StopCommand}" Margin="20">Stop</Button>
-                    <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
-                </StackPanel>
-            </Border>
-        </Grid>
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="FlatButton">
+            <Setter Property="FontSize" Value="24"></Setter>
+            <Setter Property="Padding" Value="20"></Setter>
+            <Setter Property="BorderBrush" Value="Transparent"></Setter>
+            <Setter Property="Background" Value="White"></Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="20" 
+                                      ShadowDepth="5"
+                                      Color="Black"
+                                      Opacity="0.3" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
 
-        <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
-            <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
-
-                <Grid  Margin="50">
-                    <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <Grid Grid.Row="1" Margin="20"  Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+        <Grid Background="GhostWhite">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-                <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
+
+            <!--<Grid Grid.Row="0" Background="White">
+                <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" Color="LightGray" />
                     </Border.Effect>
-                    <Viewbox Stretch="Uniform">
-                        <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
-                    </Viewbox>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding Path=CaptureCommand}" Margin="20">Capture</Button>
+                        <Button Command="{Binding Path=ResetCommand}" Margin="20">Reset</Button>
+                        <Button Command="{Binding Path=StopCommand}" Margin="20">Stop</Button>
+                        <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
+                    </StackPanel>
+                </Border>
+            </Grid>-->
+
+
+            <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+
+                <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
+                    <Grid  Margin="50">
+                        <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
+                    </Grid>
                 </Border>
             </Grid>
-            <Grid Grid.Row="1">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
-                    <Button FontSize="20" Background="White" Command="{Binding Path=CancelCommand}">
-                        <TextBlock Margin="10">Anuluj</TextBlock>
-                    </Button>
-                </StackPanel>
+
+            <Grid Grid.Row="1" Margin="20"  Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+
+                        <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
+                            <Border.Effect>
+                                <DropShadowEffect 
+                                BlurRadius="30" 
+                                ShadowDepth="10"
+                                Color="Black"
+                                Opacity="0.3" />
+                            </Border.Effect>
+                            <Viewbox Stretch="Uniform">
+                                <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
+                            </Viewbox>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <StackPanel VerticalAlignment="Center" 
+                                    HorizontalAlignment="Stretch">
+                            <Button  Style="{StaticResource FlatButton}"
+                                     Command="{Binding Path=RecaptureCommand}"
+                                     Height="200"
+                                     Margin="50 25">
+                                <TextBlock>
+                                    <Run Text="Powtórz"></Run>
+                                </TextBlock>
+                            </Button>
+                            <Button  Style="{StaticResource FlatButton}"
+                                     Command="{Binding Path=CancelCommand}"
+                                     Height="200"
+                                     Margin="50 25">
+                                <TextBlock>
+                                    <Run Text="Drukuj"></Run>
+                                </TextBlock>
+                            </Button>
+                            <Button  Style="{StaticResource FlatButton}"
+                                     Command="{Binding Path=CancelCommand}"
+                                     Height="200"
+                                     Margin="50 25">
+                                <TextBlock>
+                                    <Run Text="Zamknij"></Run>
+                                </TextBlock>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
             </Grid>
+        </Grid>
+        <Grid>
+            <TextBlock FontSize="600" 
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" 
+                       Visibility="{Binding Path=CaptureCountdownSecondsRemainingVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Text="{Binding Path=CaptureCountdownSecondsRemaining}"
+                       Foreground="White"
+            >
+
+                <TextBlock.Effect>
+                    <DropShadowEffect
+                        ShadowDepth="10"
+                        Color="Black"
+                        Opacity="0.6"
+                        BlurRadius="100"/>
+
+                </TextBlock.Effect>
+            </TextBlock>
         </Grid>
     </Grid>
 

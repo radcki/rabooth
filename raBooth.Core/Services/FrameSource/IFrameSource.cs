@@ -11,7 +11,9 @@ namespace raBooth.Core.Services.FrameSource
     {
         void Start();
         void Stop();
-        event EventHandler<FrameAcquiredEventArgs> FrameAcquired;
+        void CaptureStillImage();
+        event EventHandler<FrameAcquiredEventArgs> LiveViewFrameAcquired;
+        event EventHandler<FrameAcquiredEventArgs> StillImageCaptured;
     }
 
     public record FrameAcquiredEventArgs(Mat Frame)

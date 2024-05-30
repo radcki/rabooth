@@ -20,7 +20,9 @@
                 <Grid Width="200" Height="250" Margin="10">
                     <Border>
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="10" Color="LightGray" />
+                            <DropShadowEffect BlurRadius="10"  
+                                              Color="Black"
+                                              Opacity="0.3" />
                         </Border.Effect>
                         <Viewbox Stretch="Uniform">
                             <Button Background="Transparent" Foreground="Transparent" Command="{Binding Path=DataContext.SelectLayoutCommand, RelativeSource={ RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Path=.}" >

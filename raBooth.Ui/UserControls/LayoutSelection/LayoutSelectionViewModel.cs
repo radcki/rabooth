@@ -18,7 +18,12 @@ namespace raBooth.Ui.UserControls.LayoutSelection
         public ObservableCollection<SelectableCollageLayout> Layouts { get; set; } = [];
         public event EventHandler<CollageLayoutSelectedEventArgs> LayoutSelected;
 
-        public ICommand SelectLayoutCommand => new RelayCommand<SelectableCollageLayout>(layout => LayoutSelected?.Invoke(this, new CollageLayoutSelectedEventArgs(layout)));
+        public ICommand SelectLayoutCommand => new RelayCommand<SelectableCollageLayout>(ExecuteSelectLayoutCommand);
+
+        private void ExecuteSelectLayoutCommand(SelectableCollageLayout? layout)
+        {
+            LayoutSelected?.Invoke(this, new CollageLayoutSelectedEventArgs(layout));
+        }
 
         public void AddLayout(CollageLayout layout)
         {

@@ -6,8 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using raBooth.Core.Model;
+using raBooth.Core.Services.CollageCapture;
 using raBooth.Core.Services.FrameSource;
+using raBooth.Core.Services.Printing;
 using raBooth.Infrastructure.Services.FrameSource;
+using raBooth.Infrastructure.Services.Printing;
 using raBooth.Ui.Configuration;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
@@ -40,11 +43,20 @@ namespace raBooth.Ui
         {
             services.Configure<WebcamFrameSourceConfiguration>(configuration.GetSection(nameof(WebcamFrameSourceConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebcamFrameSourceConfiguration>>().Value);
+
             services.Configure<LayoutsConfiguration>(configuration.GetSection(nameof(LayoutsConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<LayoutsConfiguration>>().Value);
 
+            services.Configure<CollageCaptureServiceConfiguration>(configuration.GetSection(nameof(CollageCaptureServiceConfiguration)));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<CollageCaptureServiceConfiguration>>().Value);
+
+            services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
+
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
+            services.AddTransient<PrintService>();
+            services.AddTransient<CollageCaptureService>();
             services.AddTransient<MainWindow>();
             services.AddSingleton<MainViewModel>();
             services.AddTransient<LayoutSelectionViewModel>();

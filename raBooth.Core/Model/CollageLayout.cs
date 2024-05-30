@@ -25,6 +25,11 @@ public class CollageLayout
         return canvas;
     }
 
+    public bool HasUncaptredItems()
+    {
+        return UncapturedItems.Count > 0;
+    }
+
     public void AddItem(CollageItem item)
     {
         Items.Add(item);
