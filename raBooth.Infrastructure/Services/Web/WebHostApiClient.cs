@@ -5,12 +5,13 @@ namespace raBooth.Infrastructure.Services.Web
 {
     public class WebHostApiClientConfiguration
     {
+        public static string SectionName = "WebHostApiConfiguration";
         public string BaseUrl { get; init; }
     }
     public class WebHostApiClient : IWebHostApiClient
     {
         private readonly WebHostApiClientConfiguration _configuration;
-        private IRestClient _client;
+        private readonly IRestClient _client;
 
         public WebHostApiClient(WebHostApiClientConfiguration configuration)
         {
@@ -20,8 +21,13 @@ namespace raBooth.Infrastructure.Services.Web
 
         public async Task<CreateCollage.Result> CreateCollage(CreateCollage.Command command, CancellationToken cancellationToken)
         {
-            var request = new RestRequest(@"api/collage/create", Method.Post);
-            request.AddJsonBody(command);
+            //var request = new RestRequest(@"api/collage/create", Method.Post);
+            //request.AddJsonBody(command);
+
+            var request = new RestRequest("api/collage/create", Method.Post) { RequestFormat = DataFormat.Json, AlwaysMultipartFormData = true };
+            request.AddParameter(nameof(command.CaptureDate), command.CaptureDate.ToString("u"));
+            request.AddFile(nameof(command.Image), command.Image, "collage.jpg");
+
             var response = await _client.PostAsync<CreateCollage.Result>(request, cancellationToken);
             return response;
         }
@@ -29,7 +35,7 @@ namespace raBooth.Infrastructure.Services.Web
         public async Task<AddSourceCollagePhoto.Result> AddSourceCollagePhoto(AddSourceCollagePhoto.Command command, CancellationToken cancellationToken)
         {
             var request = new RestRequest(@$"api/collage/{command.CollageId}/add-source-photo", Method.Post);
-            request.AddJsonBody(command);
+            request.AddFile(nameof(command.Image), command.Image, "image.jpg");
             var response = await _client.PostAsync<AddSourceCollagePhoto.Result>(request, cancellationToken);
             return response;
         }

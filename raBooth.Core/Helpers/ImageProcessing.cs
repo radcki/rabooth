@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,6 +50,12 @@ namespace raBooth.Core.Helpers
             var colEnd = Math.Clamp(colStart + size.Width, 0, image.Cols);
 
             image[rowStart, rowEnd, colStart, colEnd].CopyTo(image);
+        }
+
+        public static byte[] EncodeToJpg(Mat image, int quality = 90)
+        {
+            quality = Math.Clamp(quality, 0, 100);
+            return image.ImEncode(".jpg", new ImageEncodingParam(ImwriteFlags.JpegQuality, quality));
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using MediatR;
+using raBooth.Web.Core.Entities;
 using raBooth.Web.Core.Types;
 
 namespace raBooth.Web.Core.Features.Collage.Commands;
 
 public class AddSourcePhoto
 {
-    public record Command(Guid CollageId) : IRequest<Result>;
+    public record Command(Guid CollageId, FileEnvelope FileEnvelope) : IRequest<Result>;
 
     public class Result : BaseResponse
     {

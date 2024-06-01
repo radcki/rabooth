@@ -14,12 +14,12 @@ namespace raBooth.Core.Services.Web
 
     public class CreateCollage
     {
-        public record Command();
+        public record Command(DateTime CaptureDate, byte[] Image);
         public record Result(Guid CollageId);
     }
     public class AddSourceCollagePhoto
     {
-        public record Command(Guid CollageId);
+        public record Command(Guid CollageId, byte[] Image);
         public record Result();
     }
 

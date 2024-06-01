@@ -56,9 +56,13 @@ namespace raBooth.Ui
 
             services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
+            
+            services.Configure<WebHostApiClientConfiguration>(configuration.GetSection(WebHostApiClientConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebHostApiClientConfiguration>>().Value);
 
             services.AddTransient<ICollageStorageService, WebCollageStorageService>();
             services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
+            //services.AddTransient<IWebHostApiClient, WebHostApiClient>();
 
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();

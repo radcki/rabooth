@@ -1,3 +1,4 @@
+using raBooth.Web.Host.Infrastructure;
 using System.Reflection;
 
 namespace raBooth.Web.Host
@@ -16,6 +17,7 @@ namespace raBooth.Web.Host
                        .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; });
 
                 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(applicationAssembly, hostAssembly));
+                builder.Services.AddTransient<IFormFileEnvelopeMapper, FormFileEnvelopeMapper>();
 
                 var app = builder.Build();
 

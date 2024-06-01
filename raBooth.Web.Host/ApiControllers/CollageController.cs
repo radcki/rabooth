@@ -1,24 +1,30 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using raBooth.Web.Core.Features.Collage.Commands;
+using raBooth.Web.Host.ApiControllers.Model;
+using raBooth.Web.Host.Infrastructure;
 
 namespace raBooth.Web.Host.ApiControllers
 {
     [ApiController]
     [Route("api/collage")]
-    public class CollageController(IMediator mediator) : Controller
+    public class CollageController(IMediator mediator, IFormFileEnvelopeMapper fileMapper) : Controller
     {
 
+
         [HttpPost("create")]
-        public async Task<CreateCollage.Result> Create([FromForm] CreateCollage.Command command, CancellationToken cancellationToken)
+        public async Task<CreateCollage.Result> Create([FromForm] CreateCollageCommandRequest request, CancellationToken cancellationToken)
         {
+            var fileEnvelope = fileMapper.MapFormFile(request.Image);
+            var command = new CreateCollage.Command(request.CaptureDate, fileEnvelope);
             return await mediator.Send(command, cancellationToken);
         }
 
         [HttpPost("{collageId}/add-source-photo")]
-        public async Task<AddSourcePhoto.Result> AddSourcePhoto([FromRoute] Guid collageId, [FromForm] AddSourcePhoto.Command command, CancellationToken cancellationToken)
+        public async Task<AddSourcePhoto.Result> AddSourcePhoto([FromRoute] Guid collageId, [FromForm] AddSourcePhotoCommandRequest request, CancellationToken cancellationToken)
         {
-            command = command with { CollageId = collageId };
+            var fileEnvelope = fileMapper.MapFormFile(request.Image);
+            var command = new AddSourcePhoto.Command(collageId, fileEnvelope);
             return await mediator.Send(command, cancellationToken);
         }
         

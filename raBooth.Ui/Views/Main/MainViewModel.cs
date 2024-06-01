@@ -271,6 +271,7 @@ namespace raBooth.Ui.Views.Main
 
             RecaptureButtonVisible = false;
             PrintButtonVisible = false;
+            CancelCommandCountdownVisible = false;
         }
 
         private async Task ExecuteStopCommand()
@@ -302,6 +303,7 @@ namespace raBooth.Ui.Views.Main
                 RecaptureButtonVisible = true;
                 PrintButtonVisible = true;
                 StartCancellationCountdown();
+                await ExecuteSaveCommand();
             }
             finally
             {
