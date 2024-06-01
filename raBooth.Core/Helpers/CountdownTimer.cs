@@ -9,21 +9,22 @@ namespace raBooth.Core.Helpers
     public class CountdownTimer
     {
 
-        private readonly TimeSpan _timespan;
+        private readonly TimeSpan _length;
         private readonly TimeSpan _tickRate;
         private bool _isRunning;
         private bool _isCancellationRequested;
         private Task _countdownTask;
 
-        public CountdownTimer(TimeSpan timespan, TimeSpan tickRate)
+        public CountdownTimer(TimeSpan length, TimeSpan tickRate)
         {
-            _timespan = timespan;
+            _length = length;
             _tickRate = tickRate;
         }
 
         public event EventHandler OnElapsed;
         public event EventHandler<CountdownTimerTickEventArgs> OnCountdownTick;
         public bool IsInProgress => _isRunning;
+        public TimeSpan Length => _length;
 
         public Task Start(CancellationToken cancellationToken)
         {
@@ -32,7 +33,7 @@ namespace raBooth.Core.Helpers
             {
                 return _countdownTask;
             }
-            var endTime = DateTime.UtcNow + _timespan;
+            var endTime = DateTime.UtcNow + _length;
             _isRunning = true;
             _countdownTask = Task.Run(async () =>
                                       {

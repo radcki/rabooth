@@ -36,9 +36,15 @@ namespace raBooth.Ui.Views.Main
         private bool _layoutSelectionVisible;
         private int _captureCountdownSecondsRemaining;
         private CountdownTimer _captureTimer;
+        private CountdownTimer _cancelTimer;
 
         private CancellationTokenSource _collageCaptureCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancelCancellationTokenSource = new CancellationTokenSource();
         private bool _captureCountdownSecondsRemainingVisible;
+        private int _cancelCommandCountdownSecondsRemaining;
+        private bool _cancelCommandCountdownVisible;
+        private bool _printButtonVisible;
+        private bool _recaptureButtonVisible;
 
         public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, CollageCaptureService collageCaptureService, PrintService printService)
         {
@@ -55,6 +61,7 @@ namespace raBooth.Ui.Views.Main
             frameSource.Start();
             UpdateComponentsVisibility();
             ConfigureCaptureTimer();
+            ConfigureCancelTimer();
         }
 
         private async void OnLayoutSelected(object? sender, CollageLayoutSelectedEventArgs e)
@@ -76,6 +83,22 @@ namespace raBooth.Ui.Views.Main
                                        {
                                            _layout?.CollageLayout.CaptureNextItem();
                                        };
+        }
+        private void ConfigureCancelTimer()
+        {
+
+            _cancelTimer = new CountdownTimer(TimeSpan.FromSeconds(15), TimeSpan.FromMilliseconds(100));
+
+            _cancelTimer.OnCountdownTick += (_, args) => CancelCommandCountdownSecondsRemaining = 1 + (int)args.RemainingTime.Seconds;
+            _cancelTimer.OnElapsed += (_, _) =>
+                                      {
+                                          if (CancelCommand.CanExecute(null))
+                                          {
+                                              CancelCommand.Execute(null);
+                                          }
+
+                                          CancelCommandCountdownVisible = false;
+                                      };
         }
 
         private Task PrepareLayouts()
@@ -126,6 +149,12 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _captureCountdownSecondsRemaining, value);
         }
 
+        public int CancelCommandCountdownSecondsRemaining
+        {
+            get => _cancelCommandCountdownSecondsRemaining;
+            set => SetProperty(ref _cancelCommandCountdownSecondsRemaining, value);
+        }
+
         public bool LayoutSelectionVisible
         {
             get => _layoutSelectionVisible;
@@ -136,6 +165,24 @@ namespace raBooth.Ui.Views.Main
         {
             get => _captureCountdownSecondsRemainingVisible;
             set => SetProperty(ref _captureCountdownSecondsRemainingVisible, value);
+        }
+
+        public bool CancelCommandCountdownVisible
+        {
+            get => _cancelCommandCountdownVisible;
+            set => SetProperty(ref _cancelCommandCountdownVisible, value);
+        }
+
+        public bool PrintButtonVisible
+        {
+            get => _printButtonVisible;
+            set => SetProperty(ref _printButtonVisible, value);
+        }
+
+        public bool RecaptureButtonVisible
+        {
+            get => _recaptureButtonVisible;
+            set => SetProperty(ref _recaptureButtonVisible, value);
         }
 
         public bool CollagePreviewVisible
@@ -173,6 +220,7 @@ namespace raBooth.Ui.Views.Main
 
 
         public IRelayCommand StopCommand => new AsyncRelayCommand(ExecuteStopCommand);
+        public IRelayCommand PrintCommand => new AsyncRelayCommand(ExecutePrintCommand);
         public IRelayCommand CancelCommand => new AsyncRelayCommand(ExecuteCancelCommand);
         public IRelayCommand CaptureCommand => new AsyncRelayCommand(ExecuteCaptureCommand);
         public IRelayCommand ResetCommand => new AsyncRelayCommand(ExecuteResetCommand);
@@ -198,6 +246,8 @@ namespace raBooth.Ui.Views.Main
 
         private async Task ExecuteCancelCommand()
         {
+            _cancelTimer.Cancel();
+
             if (Layout == default)
             {
                 return;
@@ -214,6 +264,9 @@ namespace raBooth.Ui.Views.Main
             }
             Layout.CollageLayout.Clear();
             Layout = default;
+
+            RecaptureButtonVisible = false;
+            PrintButtonVisible = false;
         }
 
         private async Task ExecuteStopCommand()
@@ -230,6 +283,8 @@ namespace raBooth.Ui.Views.Main
 
             try
             {
+                RecaptureButtonVisible = false;
+                PrintButtonVisible = false;
                 _collageCaptureCancellationTokenSource = new CancellationTokenSource();
 
                 var cancellationToken = _collageCaptureCancellationTokenSource.Token;
@@ -239,11 +294,23 @@ namespace raBooth.Ui.Views.Main
                     CaptureCountdownSecondsRemainingVisible = true;
                     await _captureTimer.Start(cancellationToken);
                 }
+
+                RecaptureButtonVisible = true;
+                PrintButtonVisible = true;
+                StartCancellationCountdown();
             }
             finally
             {
                 CaptureCountdownSecondsRemainingVisible = false;
             }
+        }
+
+        private void StartCancellationCountdown()
+        {
+            CancelCommandCountdownSecondsRemaining = _cancelTimer.Length.Seconds;
+            _cancelCancellationTokenSource = new CancellationTokenSource();
+            _cancelTimer.Start(_cancelCancellationTokenSource.Token);
+            CancelCommandCountdownVisible = true;
         }
 
         private async Task ExecutePrintCommand()

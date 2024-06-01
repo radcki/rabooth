@@ -87,7 +87,17 @@
                         <StackPanel VerticalAlignment="Center" 
                                     HorizontalAlignment="Stretch">
                             <Button  Style="{StaticResource FlatButton}"
+                                     Command="{Binding Path=PrintCommand}"
+                                     Visibility="{Binding Path=PrintButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                     Height="200"
+                                     Margin="50 25">
+                                <TextBlock>
+                                    <Run Text="Drukuj"></Run>
+                                </TextBlock>
+                            </Button>
+                            <Button  Style="{StaticResource FlatButton}"
                                      Command="{Binding Path=RecaptureCommand}"
+                                     Visibility="{Binding Path=RecaptureButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                      Height="200"
                                      Margin="50 25">
                                 <TextBlock>
@@ -98,17 +108,16 @@
                                      Command="{Binding Path=CancelCommand}"
                                      Height="200"
                                      Margin="50 25">
-                                <TextBlock>
-                                    <Run Text="Drukuj"></Run>
-                                </TextBlock>
-                            </Button>
-                            <Button  Style="{StaticResource FlatButton}"
-                                     Command="{Binding Path=CancelCommand}"
-                                     Height="200"
-                                     Margin="50 25">
-                                <TextBlock>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock>
                                     <Run Text="Zamknij"></Run>
-                                </TextBlock>
+                                    </TextBlock>
+                                    <TextBlock Visibility="{Binding Path=CancelCommandCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Run Text=" ("></Run>
+                                    <Run Text="{Binding Path=CancelCommandCountdownSecondsRemaining}"></Run>
+                                    <Run Text=")"></Run>
+                                    </TextBlock>
+                                </StackPanel>
                             </Button>
                         </StackPanel>
                     </Grid>
