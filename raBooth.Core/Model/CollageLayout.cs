@@ -16,6 +16,7 @@ public class CollageLayout
     private ConcurrentQueue<CollageItem> UncapturedItems { get; set; } = [];
     private Stack<CollageItem> CapturedItems { get; set; } = [];
     private Mat ViewWithCapturedItems { get; set; }
+    public DateTime LastItemCaptureUtcTime { get; private set; }
 
     private Mat GetCanvas()
     {
@@ -44,6 +45,7 @@ public class CollageLayout
 
         DrawItemOnCanvas(ViewWithCapturedItems, item);
         CapturedItems.Push(item);
+        LastItemCaptureUtcTime = DateTime.UtcNow;
     }
 
     public void UpdateNextUncapturedItemSourceImage(Mat image)
@@ -54,6 +56,14 @@ public class CollageLayout
         }
     }
 
+    public IEnumerable<Mat> GetSourceItemImages()
+    {
+        foreach (var item in Items)
+        {
+            yield return item.GetSourceImage();
+        }
+    }
+
     public Mat GetViewWithNextUncapturedItemPreview()
     {
         var view = ViewWithCapturedItems.Clone();
@@ -61,6 +71,12 @@ public class CollageLayout
         {
             DrawItemOnCanvas(view, item);
         }
+        return view;
+    }
+    public Mat GetView()
+    {
+        var view = ViewWithCapturedItems.Clone();
+
         return view;
     }
 

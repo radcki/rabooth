@@ -13,6 +13,7 @@ using raBooth.Core.Model;
 using raBooth.Core.Services.CollageCapture;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
+using raBooth.Core.Services.Storage;
 using raBooth.Infrastructure.Services.Printing;
 using raBooth.Ui.Configuration;
 using raBooth.Ui.Model;
@@ -27,6 +28,7 @@ namespace raBooth.Ui.Views.Main
         private readonly ILayoutGenerationService _gridLayoutGenerationService;
         private readonly CollageCaptureService _collageCaptureService;
         private readonly LayoutsConfiguration _layoutsConfiguration;
+        private readonly ICollageStorageService _collageStorageService;
 
 
         private BitmapSource? _preview;
@@ -40,19 +42,21 @@ namespace raBooth.Ui.Views.Main
 
         private CancellationTokenSource _collageCaptureCancellationTokenSource = new CancellationTokenSource();
         private CancellationTokenSource _cancelCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancelStorageCancellationTokenSource = new CancellationTokenSource();
         private bool _captureCountdownSecondsRemainingVisible;
         private int _cancelCommandCountdownSecondsRemaining;
         private bool _cancelCommandCountdownVisible;
         private bool _printButtonVisible;
         private bool _recaptureButtonVisible;
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, CollageCaptureService collageCaptureService, PrintService printService)
+        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, CollageCaptureService collageCaptureService, PrintService printService, ICollageStorageService collageStorageService)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
             _layoutsConfiguration = layoutsConfiguration;
             _collageCaptureService = collageCaptureService;
             _printService = printService;
+            _collageStorageService = collageStorageService;
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
             _ = PrepareLayouts();
 
@@ -335,8 +339,9 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
-            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            Layout.CollageLayout.GetViewWithNextUncapturedItemPreview().SaveImage(Path.Combine(desktop, "booth.png"));
+            _cancelStorageCancellationTokenSource = new CancellationTokenSource();
+            var progress = new Progress<StoreCollageProgress>();
+            await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
         }
     }
 }
