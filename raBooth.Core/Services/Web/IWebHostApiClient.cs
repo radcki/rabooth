@@ -8,8 +8,8 @@ namespace raBooth.Core.Services.Web
 {
     public interface IWebHostApiClient
     {
-        Task<CreateCollage.Result> CreateCollage(CreateCollage.Command command);
-        Task<AddSourceCollagePhoto.Result> AddSourceCollagePhoto(AddSourceCollagePhoto.Command command);
+        Task<CreateCollage.Result> CreateCollage(CreateCollage.Command command, CancellationToken cancellationToken);
+        Task<AddSourceCollagePhoto.Result> AddSourceCollagePhoto(AddSourceCollagePhoto.Command command, CancellationToken cancellationToken);
     }
 
     public class CreateCollage

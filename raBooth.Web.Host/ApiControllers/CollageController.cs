@@ -16,8 +16,9 @@ namespace raBooth.Web.Host.ApiControllers
         }
 
         [HttpPost("{collageId}/add-source-photo")]
-        public async Task<AddSourcePhoto.Result> AddSourcePhoto([FromForm] AddSourcePhoto.Command command, CancellationToken cancellationToken)
+        public async Task<AddSourcePhoto.Result> AddSourcePhoto([FromRoute] Guid collageId, [FromForm] AddSourcePhoto.Command command, CancellationToken cancellationToken)
         {
+            command = command with { CollageId = collageId };
             return await mediator.Send(command, cancellationToken);
         }
         

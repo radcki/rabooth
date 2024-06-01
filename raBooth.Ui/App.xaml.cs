@@ -9,8 +9,12 @@ using raBooth.Core.Model;
 using raBooth.Core.Services.CollageCapture;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
+using raBooth.Core.Services.Storage;
+using raBooth.Core.Services.Web;
 using raBooth.Infrastructure.Services.FrameSource;
 using raBooth.Infrastructure.Services.Printing;
+using raBooth.Infrastructure.Services.Storage;
+using raBooth.Infrastructure.Services.Web;
 using raBooth.Ui.Configuration;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
@@ -52,6 +56,9 @@ namespace raBooth.Ui
 
             services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
+
+            services.AddTransient<ICollageStorageService, WebCollageStorageService>();
+            services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
 
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();

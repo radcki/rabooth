@@ -14,19 +14,18 @@ namespace raBooth.Infrastructure.Services.Storage
             var sourceImages = collage.GetSourceItemImages().ToList();
             var requestToMake = 1 + sourceImages.Count;
             var requestsDone = 0;
-
+            cancellationToken.ThrowIfCancellationRequested();
             progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
-            var collageCreationResult = await httpClient.CreateCollage(new CreateCollage.Command());
+            var collageCreationResult = await httpClient.CreateCollage(new CreateCollage.Command(), cancellationToken);
             requestsDone++;
             progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
             foreach (var sourceItemImage in collage.GetSourceItemImages())
             {
-                await httpClient.AddSourceCollagePhoto(new AddSourceCollagePhoto.Command(collageCreationResult.CollageId));
+                cancellationToken.ThrowIfCancellationRequested();
+                await httpClient.AddSourceCollagePhoto(new AddSourceCollagePhoto.Command(collageCreationResult.CollageId), cancellationToken);
                 requestsDone++;
                 progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
             }
         }
-
-
     }
 }
