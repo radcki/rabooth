@@ -11,9 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raBooth.Infrastructure", "r
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raBooth.Core.UnitTests", "raBooth.Core.UnitTests\raBooth.Core.UnitTests.csproj", "{7DE70B72-B039-4029-A1E3-1F428FD4263C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raBooth.Web.Host", "raBooth.Web.Host\raBooth.Web.Host.csproj", "{670F86B8-26CB-41E9-A5A5-9029E0E0CBF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raBooth.Web.Host", "raBooth.Web.Host\raBooth.Web.Host.csproj", "{670F86B8-26CB-41E9-A5A5-9029E0E0CBF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raBooth.Web.Core", "raBooth.Web.Core\raBooth.Web.Core.csproj", "{0AE13BF3-E7FF-48B1-A566-91E620DFB6A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "raBooth.Web.Core", "raBooth.Web.Core\raBooth.Web.Core.csproj", "{0AE13BF3-E7FF-48B1-A566-91E620DFB6A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

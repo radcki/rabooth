@@ -16,6 +16,7 @@ using raBooth.Core.Services.Storage;
 using raBooth.Infrastructure.Services.Printing;
 using raBooth.Ui.Configuration;
 using raBooth.Ui.Model;
+using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
 
 namespace raBooth.Ui.Views.Main
@@ -27,9 +28,10 @@ namespace raBooth.Ui.Views.Main
         private readonly ILayoutGenerationService _gridLayoutGenerationService;
         private readonly LayoutsConfiguration _layoutsConfiguration;
         private readonly ICollageStorageService _collageStorageService;
-
+        private readonly QrCodeService _qrCodeService;
 
         private BitmapSource? _preview;
+        private BitmapSource? _collagePageUrlQrCode;
         private LayoutSelectionViewModel _layoutSelectionViewModel;
         private SelectableCollageLayout? _layout;
         private bool _collagePreviewVisible;
@@ -46,14 +48,16 @@ namespace raBooth.Ui.Views.Main
         private bool _cancelCommandCountdownVisible;
         private bool _printButtonVisible;
         private bool _recaptureButtonVisible;
+        private bool _collagePageQrCodeVisible;
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService)
+        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
             _layoutsConfiguration = layoutsConfiguration;
             _printService = printService;
             _collageStorageService = collageStorageService;
+            _qrCodeService = qrCodeService;
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
             _ = PrepareLayouts();
 
@@ -181,6 +185,12 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _printButtonVisible, value);
         }
 
+        public bool CollagePageQrCodeVisible
+        {
+            get => _collagePageQrCodeVisible;
+            set => SetProperty(ref _collagePageQrCodeVisible, value);
+        }
+
         public bool RecaptureButtonVisible
         {
             get => _recaptureButtonVisible;
@@ -199,6 +209,12 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _layoutSelectionViewModel, value);
         }
 
+        public BitmapSource CollagePageUrlQrCode
+        {
+            get => _collagePageUrlQrCode;
+            set => SetProperty(ref _collagePageUrlQrCode, value);
+        }
+
 
         private void UpdateComponentsVisibility()
         {
@@ -206,6 +222,7 @@ namespace raBooth.Ui.Views.Main
             {
                 LayoutSelectionVisible = true;
                 CollagePreviewVisible = false;
+                CollagePageQrCodeVisible = false;
             }
             else
             {
@@ -288,6 +305,7 @@ namespace raBooth.Ui.Views.Main
             {
                 RecaptureButtonVisible = false;
                 PrintButtonVisible = false;
+
                 _collageCaptureCancellationTokenSource = new CancellationTokenSource();
 
                 var cancellationToken = _collageCaptureCancellationTokenSource.Token;
@@ -341,7 +359,19 @@ namespace raBooth.Ui.Views.Main
 
             _cancelStorageCancellationTokenSource = new CancellationTokenSource();
             var progress = new Progress<StoreCollageProgress>();
+            progress.ProgressChanged += OnStoreCollageProgressChanged;
             await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
+            progress.ProgressChanged -= OnStoreCollageProgressChanged;
         }
+
+        private void OnStoreCollageProgressChanged(object? sender, StoreCollageProgress e)
+        {
+            if (!string.IsNullOrEmpty(e.CollagePageUrl))
+            {
+                CollagePageUrlQrCode = _qrCodeService.GetQrCodeBitmapForUrl(e.CollagePageUrl).ToBitmapSource();
+                CollagePageQrCodeVisible = true;
+            }
+        }
+
     }
 }

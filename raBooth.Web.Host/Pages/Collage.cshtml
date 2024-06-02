@@ -1,0 +1,15 @@
+﻿@page "{CollageId}"
+@model raBooth.Web.Host.Pages.CollageModel
+@{
+    <div>
+        <img src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = Model.Collage.CollagePhoto.PhotoId })" />
+    </div>
+}
+
+
+@foreach (var collageSourcePhoto in Model.Collage.SourcePhotos)
+{
+    <div>
+        <img src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = collageSourcePhoto.PhotoId })" />
+    </div>
+}

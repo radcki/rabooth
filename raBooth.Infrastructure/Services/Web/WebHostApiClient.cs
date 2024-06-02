@@ -1,4 +1,5 @@
-﻿using raBooth.Core.Services.Web;
+﻿using System.IO;
+using raBooth.Core.Services.Web;
 using RestSharp;
 
 namespace raBooth.Infrastructure.Services.Web
@@ -29,7 +30,7 @@ namespace raBooth.Infrastructure.Services.Web
             request.AddFile(nameof(command.Image), command.Image, "collage.jpg");
 
             var response = await _client.PostAsync<CreateCollage.Result>(request, cancellationToken);
-            return response;
+            return response with { PageUrl = $"{_configuration.BaseUrl}{response.PageUrl}" };
         }
 
         public async Task<AddSourceCollagePhoto.Result> AddSourceCollagePhoto(AddSourceCollagePhoto.Command command, CancellationToken cancellationToken)

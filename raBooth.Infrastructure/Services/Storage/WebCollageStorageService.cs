@@ -17,10 +17,11 @@ namespace raBooth.Infrastructure.Services.Storage
             var requestToMake = 1 + collageItems.Count;
             var requestsDone = 0;
             cancellationToken.ThrowIfCancellationRequested();
-            progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
+            progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed, null));
             var collageCreationResult = await httpClient.CreateCollage(new CreateCollage.Command(collage.LastItemCaptureUtcTime, imageData), cancellationToken);
             requestsDone++;
-            progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
+            var pageUrl = collageCreationResult.PageUrl;
+            progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed, pageUrl));
             foreach (var collageItem in collageItems)
             {
                 var sourceItemImage = collageItem.GetSourceImage();
@@ -28,7 +29,7 @@ namespace raBooth.Infrastructure.Services.Storage
                 cancellationToken.ThrowIfCancellationRequested();
                 await httpClient.AddSourceCollagePhoto(new AddSourceCollagePhoto.Command(collageCreationResult.CollageId, collageItem.CaptureUtcDate.Value, sourceItemImageData), cancellationToken);
                 requestsDone++;
-                progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
+                progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed, pageUrl));
             }
         }
 

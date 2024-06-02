@@ -34,21 +34,6 @@
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <!--<Grid Grid.Row="0" Background="White">
-                <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="White" BorderBrush="White" BorderThickness="0" CornerRadius="0">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" Color="LightGray" />
-                    </Border.Effect>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Command="{Binding Path=CaptureCommand}" Margin="20">Capture</Button>
-                        <Button Command="{Binding Path=ResetCommand}" Margin="20">Reset</Button>
-                        <Button Command="{Binding Path=StopCommand}" Margin="20">Stop</Button>
-                        <Button Command="{Binding Path=SaveCommand}" Margin="20">Save</Button>
-                    </StackPanel>
-                </Border>
-            </Grid>-->
-
-
             <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
 
                 <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
@@ -86,6 +71,11 @@
                     <Grid Grid.Column="1">
                         <StackPanel VerticalAlignment="Center" 
                                     HorizontalAlignment="Stretch">
+                            <Image Source="{Binding Path=CollagePageUrlQrCode}"
+                                   Visibility="{Binding Path=CollagePageQrCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                   Width="300"
+                                   Height="300"></Image>
+                            
                             <Button  Style="{StaticResource FlatButton}"
                                      Command="{Binding Path=PrintCommand}"
                                      Visibility="{Binding Path=PrintButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"

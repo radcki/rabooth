@@ -15,6 +15,7 @@ using raBooth.Infrastructure.Services.Printing;
 using raBooth.Infrastructure.Services.Storage;
 using raBooth.Infrastructure.Services.Web;
 using raBooth.Ui.Configuration;
+using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
 
@@ -64,6 +65,7 @@ namespace raBooth.Ui
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
             services.AddTransient<PrintService>();
+            services.AddTransient<QrCodeService>();
             services.AddTransient<MainWindow>();
             services.AddSingleton<MainViewModel>();
             services.AddTransient<LayoutSelectionViewModel>();
