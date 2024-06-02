@@ -24,7 +24,7 @@ namespace raBooth.Web.Host.ApiControllers
         public async Task<AddSourcePhoto.Result> AddSourcePhoto([FromRoute] Guid collageId, [FromForm] AddSourcePhotoCommandRequest request, CancellationToken cancellationToken)
         {
             var fileEnvelope = fileMapper.MapFormFile(request.Image);
-            var command = new AddSourcePhoto.Command(collageId, fileEnvelope);
+            var command = new AddSourcePhoto.Command(collageId, fileEnvelope, request.CaptureDate);
             return await mediator.Send(command, cancellationToken);
         }
         

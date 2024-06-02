@@ -2,8 +2,9 @@
 
 namespace raBooth.Web.Core.Entities;
 
-public class CollagePhoto : BaseEntity, IPhoto
+public class CollageSourcePhoto : BaseEntity, IPhoto
 {
+    public int CollageSourcePhotoId { get; set; }
     public Guid PhotoId { get; set; }
     public Guid CollageId { get; set; }
     public int Index { get; set; }

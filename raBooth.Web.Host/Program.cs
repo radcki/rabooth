@@ -1,5 +1,9 @@
 using raBooth.Web.Host.Infrastructure;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using raBooth.Web.Core.DataAccess;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace raBooth.Web.Host
 {
@@ -12,12 +16,25 @@ namespace raBooth.Web.Host
                 var applicationAssembly = Assembly.Load("raBooth.Web.Core");
                 var builder = WebApplication.CreateBuilder(args);
 
+                var mysqlConnectionString = builder.Configuration.GetConnectionString("MySql");
+                builder.Services.AddDbContext<IDatabaseContext, DatabaseContext>(options =>
+                                                                                 {
+                                                                                     options.UseMySql(mysqlConnectionString,
+                                                                                                      MariaDbServerVersion.LatestSupportedServerVersion,
+                                                                                                      builder => { builder.MigrationsAssembly("raBooth.Web.Host"); });
+                                                                                 }, ServiceLifetime.Transient);
+
                 builder.Services.AddRazorPages();
                 builder.Services.AddControllers()
                        .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; });
 
+
+                builder.Services.Configure<FilesystemPhotoStorageConfiguration>(builder.Configuration.GetSection(FilesystemPhotoStorageConfiguration.SectionName));
+                builder.Services.AddSingleton(provider => provider.GetRequiredService<IOptions<FilesystemPhotoStorageConfiguration>>().Value);
+
                 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(applicationAssembly, hostAssembly));
                 builder.Services.AddTransient<IFormFileEnvelopeMapper, FormFileEnvelopeMapper>();
+                builder.Services.AddTransient<IPhotoStorage, FilesystemPhotoStorage>();
 
                 var app = builder.Build();
 

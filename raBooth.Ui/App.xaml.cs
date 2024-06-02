@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using raBooth.Core.Model;
-using raBooth.Core.Services.CollageCapture;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
 using raBooth.Core.Services.Storage;
@@ -51,8 +50,6 @@ namespace raBooth.Ui
             services.Configure<LayoutsConfiguration>(configuration.GetSection(nameof(LayoutsConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<LayoutsConfiguration>>().Value);
 
-            services.Configure<CollageCaptureServiceConfiguration>(configuration.GetSection(nameof(CollageCaptureServiceConfiguration)));
-            services.AddSingleton(provider => provider.GetRequiredService<IOptions<CollageCaptureServiceConfiguration>>().Value);
 
             services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
@@ -61,13 +58,12 @@ namespace raBooth.Ui
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebHostApiClientConfiguration>>().Value);
 
             services.AddTransient<ICollageStorageService, WebCollageStorageService>();
-            services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
-            //services.AddTransient<IWebHostApiClient, WebHostApiClient>();
+            //services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
+            services.AddTransient<IWebHostApiClient, WebHostApiClient>();
 
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
             services.AddTransient<PrintService>();
-            services.AddTransient<CollageCaptureService>();
             services.AddTransient<MainWindow>();
             services.AddSingleton<MainViewModel>();
             services.AddTransient<LayoutSelectionViewModel>();

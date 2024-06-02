@@ -13,19 +13,20 @@ namespace raBooth.Infrastructure.Services.Storage
             var executionTime = Stopwatch.StartNew();
             var image = collage.GetView();
             var imageData = ImageProcessing.EncodeToJpg(image);
-            var sourceImages = collage.GetSourceItemImages().ToList();
-            var requestToMake = 1 + sourceImages.Count;
+            var collageItems = collage.GetCollageItems().ToList();
+            var requestToMake = 1 + collageItems.Count;
             var requestsDone = 0;
             cancellationToken.ThrowIfCancellationRequested();
             progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
             var collageCreationResult = await httpClient.CreateCollage(new CreateCollage.Command(collage.LastItemCaptureUtcTime, imageData), cancellationToken);
             requestsDone++;
             progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
-            foreach (var sourceItemImage in collage.GetSourceItemImages())
+            foreach (var collageItem in collageItems)
             {
+                var sourceItemImage = collageItem.GetSourceImage();
                 var sourceItemImageData = ImageProcessing.EncodeToJpg(sourceItemImage);
                 cancellationToken.ThrowIfCancellationRequested();
-                await httpClient.AddSourceCollagePhoto(new AddSourceCollagePhoto.Command(collageCreationResult.CollageId, sourceItemImageData), cancellationToken);
+                await httpClient.AddSourceCollagePhoto(new AddSourceCollagePhoto.Command(collageCreationResult.CollageId, collageItem.CaptureUtcDate.Value, sourceItemImageData), cancellationToken);
                 requestsDone++;
                 progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed));
             }

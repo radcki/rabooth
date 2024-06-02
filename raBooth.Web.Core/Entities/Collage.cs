@@ -10,9 +10,9 @@ namespace raBooth.Web.Core.Entities
     public class Collage : BaseEntity
     {
         public Guid CollageId { get; set; }
-        public CollagePhoto CollagePhoto { get; set; }
-        public List<CollagePhoto> SourcePhotos { get; set; } = new();
         public DateTime CaptureDateTime { get; set; } = new();
         public DateTime AddedDateTime { get; set; } = new();
+        public CollagePhoto CollagePhoto { get; set; }
+        public virtual ICollection<CollageSourcePhoto> SourcePhotos { get; set; }
     }
 }

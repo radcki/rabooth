@@ -26,7 +26,7 @@ public class CollageLayout
         return canvas;
     }
 
-    public bool HasUncaptredItems()
+    public bool HasUncapturedItems()
     {
         return UncapturedItems.Count > 0;
     }
@@ -38,11 +38,12 @@ public class CollageLayout
         RedrawViewWithCapturedItems();
     }
 
-    public void CaptureNextItem()
+    public void CaptureNextItem(Mat image)
     {
         if (!UncapturedItems.TryDequeue(out var item))
             return;
 
+        item.Capture(image);
         DrawItemOnCanvas(ViewWithCapturedItems, item);
         CapturedItems.Push(item);
         LastItemCaptureUtcTime = DateTime.UtcNow;
@@ -56,12 +57,9 @@ public class CollageLayout
         }
     }
 
-    public IEnumerable<Mat> GetSourceItemImages()
+    public IEnumerable<CollageItem> GetCollageItems()
     {
-        foreach (var item in Items)
-        {
-            yield return item.GetSourceImage();
-        }
+        return Items.ToList();
     }
 
     public Mat GetViewWithNextUncapturedItemPreview()

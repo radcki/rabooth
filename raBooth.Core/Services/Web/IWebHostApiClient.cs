@@ -19,7 +19,7 @@ namespace raBooth.Core.Services.Web
     }
     public class AddSourceCollagePhoto
     {
-        public record Command(Guid CollageId, byte[] Image);
+        public record Command(Guid CollageId, DateTime CaptureDate, byte[] Image);
         public record Result();
     }
 

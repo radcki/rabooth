@@ -3,4 +3,5 @@
 public class AddSourcePhotoCommandRequest
 {
     public IFormFile Image { get; set; }
+    public DateTime CaptureDate { get; set; }
 }

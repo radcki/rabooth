@@ -10,7 +10,6 @@ using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 using raBooth.Core.Helpers;
 using raBooth.Core.Model;
-using raBooth.Core.Services.CollageCapture;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
 using raBooth.Core.Services.Storage;
@@ -26,7 +25,6 @@ namespace raBooth.Ui.Views.Main
         private readonly IFrameSource _frameSource;
         private readonly PrintService _printService;
         private readonly ILayoutGenerationService _gridLayoutGenerationService;
-        private readonly CollageCaptureService _collageCaptureService;
         private readonly LayoutsConfiguration _layoutsConfiguration;
         private readonly ICollageStorageService _collageStorageService;
 
@@ -49,12 +47,11 @@ namespace raBooth.Ui.Views.Main
         private bool _printButtonVisible;
         private bool _recaptureButtonVisible;
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, CollageCaptureService collageCaptureService, PrintService printService, ICollageStorageService collageStorageService)
+        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
             _layoutsConfiguration = layoutsConfiguration;
-            _collageCaptureService = collageCaptureService;
             _printService = printService;
             _collageStorageService = collageStorageService;
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
@@ -83,9 +80,10 @@ namespace raBooth.Ui.Views.Main
             _captureTimer = new CountdownTimer(TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(100));
 
             _captureTimer.OnCountdownTick += (_, args) => CaptureCountdownSecondsRemaining = 1 + (int)args.RemainingTime.Seconds;
-            _captureTimer.OnElapsed += (_, _) =>
+            _captureTimer.OnElapsed += async (_, _) =>
                                        {
-                                           _layout?.CollageLayout.CaptureNextItem();
+                                           var image = await _frameSource.CaptureStillImage();
+                                           _layout?.CollageLayout.CaptureNextItem(image);
                                        };
         }
         private void ConfigureCancelTimer()
@@ -294,7 +292,7 @@ namespace raBooth.Ui.Views.Main
 
                 var cancellationToken = _collageCaptureCancellationTokenSource.Token;
                 var collage = Layout.CollageLayout;
-                while (collage.HasUncaptredItems() && !cancellationToken.IsCancellationRequested)
+                while (collage.HasUncapturedItems() && !cancellationToken.IsCancellationRequested)
                 {
                     CaptureCountdownSecondsRemainingVisible = true;
                     await _captureTimer.Start(cancellationToken);

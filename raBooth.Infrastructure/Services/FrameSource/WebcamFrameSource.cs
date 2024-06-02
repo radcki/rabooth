@@ -78,16 +78,14 @@ namespace raBooth.Infrastructure.Services.FrameSource
         }
 
         /// <inheritdoc />
-        public void CaptureStillImage()
+        public async Task<Mat> CaptureStillImage()
         {
-            StillImageCaptured?.Invoke(this, new FrameAcquiredEventArgs(_latestFrame));
+            return _latestFrame;
         }
 
         /// <inheritdoc />
         public event EventHandler<FrameAcquiredEventArgs>? LiveViewFrameAcquired;
 
-        /// <inheritdoc />
-        public event EventHandler<FrameAcquiredEventArgs>? StillImageCaptured;
 
         #region IDisposable
 

@@ -36,6 +36,7 @@ namespace raBooth.Infrastructure.Services.Web
         {
             var request = new RestRequest(@$"api/collage/{command.CollageId}/add-source-photo", Method.Post);
             request.AddFile(nameof(command.Image), command.Image, "image.jpg");
+            request.AddParameter(nameof(command.CaptureDate), command.CaptureDate.ToString("u"));
             var response = await _client.PostAsync<AddSourceCollagePhoto.Result>(request, cancellationToken);
             return response;
         }
