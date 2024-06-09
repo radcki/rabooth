@@ -31,7 +31,8 @@ public class FilesystemPhotoStorage(FilesystemPhotoStorageConfiguration configur
 
     private string GetImagePath(IPhoto reference)
     {
-        var directory = Path.Combine(configuration.DirectoryPath, reference.CollageId.ToString());
+
+        var directory = Path.Combine(configuration.DirectoryPath, $"{reference.CaptureDateTime.ToString("yyyy-MM-dd_HHmmss")}_{reference.CollageId.ToString()}");
         var filename = $"{reference.PhotoId.ToString()}.jpg";
         return Path.Combine(directory, filename);
     }

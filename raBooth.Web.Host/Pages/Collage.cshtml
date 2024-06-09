@@ -1,15 +1,18 @@
 ﻿@page "{CollageId}"
 @model raBooth.Web.Host.Pages.CollageModel
 @{
-    <div>
-        <img src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = Model.Collage.CollagePhoto.PhotoId })" />
-    </div>
+    <a class="item" download="collage.jpg"
+       href="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = Model.Collage.CollagePhoto.PhotoId })">
+        <img class="image shadow-3" src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = Model.Collage.CollagePhoto.PhotoId })" />
+    </a>
 }
 
 
 @foreach (var collageSourcePhoto in Model.Collage.SourcePhotos)
 {
-    <div>
-        <img src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = collageSourcePhoto.PhotoId })" />
-    </div>
+    <a class="item" download="photo-@(collageSourcePhoto.Index).jpg"
+       href="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = collageSourcePhoto.PhotoId })">
+
+        <img class="image shadow-3" src="@Url.Action("GetPhotoData", "Collage", new { collageId = Model.Collage.CollageId, photoId = collageSourcePhoto.PhotoId })" />
+    </a>
 }
