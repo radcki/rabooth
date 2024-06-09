@@ -1,5 +1,4 @@
-﻿using System.IO;
-using raBooth.Core.Services.Web;
+﻿using raBooth.Core.Services.Web;
 using RestSharp;
 
 namespace raBooth.Infrastructure.Services.Web
@@ -8,6 +7,7 @@ namespace raBooth.Infrastructure.Services.Web
     {
         public static string SectionName = "WebHostApiConfiguration";
         public string BaseUrl { get; init; }
+        public string ApiKey { get; init; }
     }
     public class WebHostApiClient : IWebHostApiClient
     {
@@ -18,6 +18,7 @@ namespace raBooth.Infrastructure.Services.Web
         {
             _configuration = configuration;
             _client = new RestClient(_configuration.BaseUrl);
+            _client.AddDefaultHeader("X-API-KEY", _configuration.ApiKey);
         }
 
         public async Task<CreateCollage.Result> CreateCollage(CreateCollage.Command command, CancellationToken cancellationToken)

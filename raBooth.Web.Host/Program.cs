@@ -34,9 +34,14 @@ namespace raBooth.Web.Host
                 builder.Services.Configure<FilesystemPhotoStorageConfiguration>(builder.Configuration.GetSection(FilesystemPhotoStorageConfiguration.SectionName));
                 builder.Services.AddSingleton(provider => provider.GetRequiredService<IOptions<FilesystemPhotoStorageConfiguration>>().Value);
 
+                builder.Services.Configure<ConfigApiKeyValidatorConfiguration>(builder.Configuration.GetSection(ConfigApiKeyValidatorConfiguration.SectionName));
+                builder.Services.AddSingleton(provider => provider.GetRequiredService<IOptions<ConfigApiKeyValidatorConfiguration>>().Value);
+
+                builder.Services.AddSingleton<ApiKeyAuthorizationFilter>();
                 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(applicationAssembly, hostAssembly));
                 builder.Services.AddTransient<IFormFileEnvelopeMapper, FormFileEnvelopeMapper>();
                 builder.Services.AddTransient<IPhotoStorage, FilesystemPhotoStorage>();
+                builder.Services.AddTransient<IApiKeyValidator, ConfigApiKeyValidator>();
 
                 var app = builder.Build();
 

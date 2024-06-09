@@ -9,6 +9,7 @@ using static System.Net.Mime.MediaTypeNames;
 namespace raBooth.Web.Host.ApiControllers
 {
     [ApiController]
+    [ApiKey]
     [Route("api/collage")]
     public class CollageController(IMediator mediator, IFormFileEnvelopeMapper fileMapper) : Controller
     {

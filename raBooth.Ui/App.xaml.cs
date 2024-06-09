@@ -32,7 +32,8 @@ namespace raBooth.Ui
         protected override void OnStartup(StartupEventArgs e)
         {
             var builder = new ConfigurationBuilder()
-                         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                         .AddUserSecrets(GetType().Assembly, true);
 
             var configuration = builder.Build();
 
