@@ -13,6 +13,7 @@ Configuration from appsettings.json can be overrided by enveironment variables:
 
 raBooth_ConnectionStrings__MySql=\<ConnectionString>
 raBooth_FilesystemPhotoStorageConfiguration__DirectoryPath=\<Path>
+raBooth_ApiKeysConfiguration__ApiKeys__\<Index>=\<ApiKey>
 
 To run application in docker:
 * Bind port 8080
