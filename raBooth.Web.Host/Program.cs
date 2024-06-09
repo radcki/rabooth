@@ -15,6 +15,8 @@ namespace raBooth.Web.Host
                 var hostAssembly = Assembly.Load("raBooth.Web.Host");
                 var applicationAssembly = Assembly.Load("raBooth.Web.Core");
                 var builder = WebApplication.CreateBuilder(args);
+                builder.Configuration.AddEnvironmentVariables(prefix: "raBooth_");
+
 
                 var mysqlConnectionString = builder.Configuration.GetConnectionString("MySql");
                 builder.Services.AddDbContext<IDatabaseContext, DatabaseContext>(options =>

@@ -19,4 +19,4 @@ RUN dotnet publish "./raBooth.Web.Host.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish ./
-ENTRYPOINT ["dotnet", "raBudget.Api.dll"]
+ENTRYPOINT ["dotnet", "raBooth.Web.Host.dll"]
