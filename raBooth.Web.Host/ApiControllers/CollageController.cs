@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using raBooth.Web.Core.Features.Collage.Commands;
 using raBooth.Web.Core.Features.Collage.Queries;
@@ -37,6 +38,7 @@ namespace raBooth.Web.Host.ApiControllers
             return await mediator.Send(command, cancellationToken);
         }
 
+        [AllowAnonymous]
         [HttpGet("{collageId}/photo-data/{photoId}")]
         public async Task<FileResult> GetPhotoData([FromRoute] Guid collageId,[FromRoute] Guid photoId, CancellationToken cancellationToken)
         {
