@@ -18,10 +18,44 @@ namespace raBooth.Ui
     /// </summary>
     public partial class MainWindow : Window
     {
+        private WindowState _previousWindowState;
         public MainWindow()
         {
             DataContext = App.Services.GetRequiredService<MainViewModel>();
             InitializeComponent();
+        }
+
+        #region Overrides of UIElement
+
+        /// <inheritdoc />
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            if (e.Key == Key.F11)
+            {
+                ToggleFullscreen();
+            }
+
+            base.OnKeyUp(e);
+        }
+
+        #endregion
+
+        private void ToggleFullscreen()
+        {
+            if (WindowStyle == WindowStyle.None)
+            {
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                WindowState = _previousWindowState;
+                Topmost = false;
+            }
+            else
+            {
+
+                WindowStyle = WindowStyle.None;
+                _previousWindowState = WindowState;
+                WindowState = WindowState.Maximized;
+                Topmost = true;
+            }
         }
     }
 }
