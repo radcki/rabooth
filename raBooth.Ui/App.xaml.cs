@@ -51,7 +51,9 @@ namespace raBooth.Ui
 
             services.Configure<LayoutsConfiguration>(configuration.GetSection(nameof(LayoutsConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<LayoutsConfiguration>>().Value);
-
+            
+            services.Configure<CaptureConfiguration>(configuration.GetSection(CaptureConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<CaptureConfiguration>>().Value);
 
             services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
