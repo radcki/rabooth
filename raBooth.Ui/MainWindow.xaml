@@ -67,7 +67,7 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
-                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -500 0 0" FontSize="80">Wybierz układ</Label>
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -500 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
                 <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
                     <Grid  Margin="50">
                         <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
@@ -90,7 +90,7 @@
                             Visibility="{Binding Path=GetReadyMessageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
-                            <Label FontSize="200">Gotowy?</Label>
+                            <Label FontSize="200" Content="{x:Static local:Resources.AreYouReady}"></Label>
                         </Border>
                         <Border 
                             Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -136,7 +136,7 @@
                                     </Border.Effect>
                                     <Grid>
                                         <StackPanel Visibility="{Binding Path=CaptureCountdownSecondsRemainingVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <Label FontSize="40" Margin="40 15 0 0">Pstryk za:</Label>
+                                            <Label FontSize="40" Margin="40 15 0 0" Content="{x:Static local:Resources.TakingPictureIn}"></Label>
 
                                             <TextBlock FontSize="350" 
                                                    HorizontalAlignment="Center"
@@ -157,7 +157,7 @@
                                         Width="350" />
                                         <StackPanel Visibility="{Binding Path=CollagePageQrCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                                 Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                            <Label FontSize="40" Margin="40 15 0 -30">Twoje zdjęcia:</Label>
+                                            <Label FontSize="40" Margin="40 15 0 -30" Content="{x:Static local:Resources.YourPhotos}"></Label>
                                             <Image Source="{Binding Path=CollagePageUrlQrCode}"
                                           
                                            Width="400"
@@ -175,7 +175,7 @@
                                      Margin="50 25">
                                 <TextBlock>
                                     <fa:FontAwesome Icon="Print" Margin="0 0 20 0"></fa:FontAwesome>
-                                    <Run Text="Drukuj"></Run>
+                                    <Run Text="{x:Static local:Resources.Print}"></Run>
                                 </TextBlock>
 
                             </Button>
@@ -186,7 +186,7 @@
                                      Margin="50 25">
                                 <TextBlock>
                                     <fa:FontAwesome Icon="Refresh" Margin="0 0 20 0"></fa:FontAwesome>
-                                    <Run Text="Powtórz"></Run>
+                                    <Run Text="{x:Static local:Resources.Retake}"></Run>
                                 </TextBlock>
                             </Button>
                             <Button  Style="{StaticResource FlatButton}"
@@ -196,7 +196,7 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock>
                                     <fa:FontAwesome Icon="Close" Margin="0 0 20 0"></fa:FontAwesome>
-                                    <Run Text="Zamknij"></Run>
+                                    <Run Text="{x:Static local:Resources.Close}"></Run>
                                     </TextBlock>
                                     <TextBlock Visibility="{Binding Path=CancelCommandCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Run Text=" ("></Run>
@@ -211,23 +211,6 @@
             </Grid>
         </Grid>
         <Grid>
-            <!--<TextBlock FontSize="600" 
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" 
-                       Visibility="{Binding Path=CaptureCountdownSecondsRemainingVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                       Text="{Binding Path=CaptureCountdownSecondsRemaining}"
-                       Foreground="White"
-            >
-
-                <TextBlock.Effect>
-                    <DropShadowEffect
-                        ShadowDepth="10"
-                        Color="Black"
-                        Opacity="0.6"
-                        BlurRadius="100"/>
-
-                </TextBlock.Effect>
-            </TextBlock>-->
         </Grid>
     </Grid>
 

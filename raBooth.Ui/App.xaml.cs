@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +42,7 @@ namespace raBooth.Ui
             ConfigureServices(serviceCollection, configuration);
 
             Services = serviceCollection.BuildServiceProvider();
-
+            SetCulture();
         }
 
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
@@ -51,15 +52,18 @@ namespace raBooth.Ui
 
             services.Configure<LayoutsConfiguration>(configuration.GetSection(nameof(LayoutsConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<LayoutsConfiguration>>().Value);
-            
+
             services.Configure<CaptureConfiguration>(configuration.GetSection(CaptureConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<CaptureConfiguration>>().Value);
 
             services.Configure<PrintServiceConfiguration>(configuration.GetSection(PrintServiceConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<PrintServiceConfiguration>>().Value);
-            
+
             services.Configure<WebHostApiClientConfiguration>(configuration.GetSection(WebHostApiClientConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebHostApiClientConfiguration>>().Value);
+
+            services.Configure<UiConfiguration>(configuration.GetSection(UiConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<UiConfiguration>>().Value);
 
             services.AddTransient<ICollageStorageService, WebCollageStorageService>();
             //services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
@@ -72,6 +76,17 @@ namespace raBooth.Ui
             services.AddTransient<MainWindow>();
             services.AddSingleton<MainViewModel>();
             services.AddTransient<LayoutSelectionViewModel>();
+        }
+
+        private void SetCulture()
+        {
+            var uiConfiguration = Services.GetRequiredService<UiConfiguration>();
+            if (!string.IsNullOrEmpty(uiConfiguration.Culture))
+            {
+                var culture = CultureInfo.GetCultures(CultureTypes.AllCultures).FirstOrDefault(x => x.Name == uiConfiguration.Culture) ?? CultureInfo.CurrentCulture;
+                CultureInfo.CurrentCulture = culture;
+                CultureInfo.CurrentUICulture = culture;
+            }
         }
     }
 
