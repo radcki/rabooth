@@ -6,6 +6,7 @@ using OpenCvSharp.WpfExtensions;
 using raBooth.Core.Helpers;
 using raBooth.Core.Model;
 using raBooth.Core.Services.FrameSource;
+using raBooth.Core.Services.Light;
 using raBooth.Core.Services.Storage;
 using raBooth.Infrastructure.Services.Printing;
 using raBooth.Ui.Configuration;
@@ -24,6 +25,7 @@ namespace raBooth.Ui.Views.Main
         private readonly CaptureConfiguration _captureConfiguration;
         private readonly ICollageStorageService _collageStorageService;
         private readonly QrCodeService _qrCodeService;
+        private readonly ILightManager _lightManager;
 
         private BitmapSource? _preview;
         private BitmapSource? _collagePageUrlQrCode;
@@ -41,14 +43,14 @@ namespace raBooth.Ui.Views.Main
         private bool _captureCountdownSecondsRemainingVisible;
         private int _cancelCommandCountdownSecondsRemaining;
         private bool _cancelCommandCountdownVisible;
-        private bool _printButtonVisible;
-        private bool _recaptureButtonVisible;
+        private bool _printButtonEnabled;
+        private bool _recaptureButtonEnabled;
         private bool _collagePageQrCodeVisible;
         private bool _collagePageQrCodeSpinnerVisible;
         private bool _getReadyMessageVisible;
         private bool _collagePreviewVisible;
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService, CaptureConfiguration captureConfiguration)
+        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService, CaptureConfiguration captureConfiguration, ILightManager lightManager)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
@@ -57,6 +59,7 @@ namespace raBooth.Ui.Views.Main
             _collageStorageService = collageStorageService;
             _qrCodeService = qrCodeService;
             _captureConfiguration = captureConfiguration;
+            _lightManager = lightManager;
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
             _ = PrepareLayouts();
 
@@ -82,7 +85,15 @@ namespace raBooth.Ui.Views.Main
 
             _captureTimer = new CountdownTimer(_captureConfiguration.CaptureCountdownLength, TimeSpan.FromMilliseconds(100));
 
-            _captureTimer.OnCountdownTick += (_, args) => CaptureCountdownSecondsRemaining = 1 + (int)args.RemainingTime.Seconds;
+            _captureTimer.OnCountdownTick += (_, args) =>
+                                             {
+                                                 var counterBefore = CaptureCountdownSecondsRemaining;
+                                                 var counterAfter = 1 + (int)args.RemainingTime.Seconds;
+                                                 if (counterBefore != counterAfter)
+                                                 {
+                                                     CaptureCountdownSecondsRemaining = counterAfter;
+                                                 }
+                                             };
             _captureTimer.OnElapsed += async (_, _) =>
                                        {
                                            var image = await _frameSource.CaptureStillImage();
@@ -178,10 +189,10 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _cancelCommandCountdownVisible, value);
         }
 
-        public bool PrintButtonVisible
+        public bool PrintButtonEnabled
         {
-            get => _printButtonVisible;
-            set => SetProperty(ref _printButtonVisible, value);
+            get => _printButtonEnabled;
+            set => SetProperty(ref _printButtonEnabled, value);
         }
 
         public bool CollagePageQrCodeVisible
@@ -202,10 +213,10 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _getReadyMessageVisible, value);
         }
 
-        public bool RecaptureButtonVisible
+        public bool RecaptureButtonEnabled
         {
-            get => _recaptureButtonVisible;
-            set => SetProperty(ref _recaptureButtonVisible, value);
+            get => _recaptureButtonEnabled;
+            set => SetProperty(ref _recaptureButtonEnabled, value);
         }
 
         public bool CollageCaptureVisible
@@ -272,6 +283,12 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
+            if (_cancelTimer.IsInProgress)
+            {
+                _cancelTimer.Cancel();
+                CancelCommandCountdownVisible = false;
+            }
+
             Layout.CollageLayout.Clear();
 
             if (_collageCaptureCancellationTokenSource.Token.CanBeCanceled)
@@ -303,8 +320,8 @@ namespace raBooth.Ui.Views.Main
             Layout.CollageLayout.Clear();
             Layout = default;
 
-            RecaptureButtonVisible = false;
-            PrintButtonVisible = false;
+            RecaptureButtonEnabled = false;
+            PrintButtonEnabled = false;
             CancelCommandCountdownVisible = false;
         }
 
@@ -325,13 +342,15 @@ namespace raBooth.Ui.Views.Main
                 CollagePageQrCodeSpinnerVisible = false;
                 CollagePageQrCodeVisible = false;
                 CollagePageUrlQrCode = default;
-                RecaptureButtonVisible = false;
-                PrintButtonVisible = false;
+                RecaptureButtonEnabled = false;
+                PrintButtonEnabled = false;
                 GetReadyMessageVisible = true;
                 CollagePreviewVisible = false;
                 await Task.Delay(_captureConfiguration.GetReadyMessageDisplayTime);
                 GetReadyMessageVisible = false;
                 CollagePreviewVisible = true;
+                await _lightManager.SetLightsToHighBrightness();
+
 
                 _collageCaptureCancellationTokenSource = new CancellationTokenSource();
 
@@ -343,10 +362,11 @@ namespace raBooth.Ui.Views.Main
                     await _captureTimer.Start(cancellationToken);
                 }
 
-                RecaptureButtonVisible = true;
-                PrintButtonVisible = true;
+                RecaptureButtonEnabled = true;
+                PrintButtonEnabled = true;
                 StartCancellationCountdown();
                 await ExecuteSaveCommand();
+                await _lightManager.SetLightsToLowBrightness();
             }
             finally
             {
