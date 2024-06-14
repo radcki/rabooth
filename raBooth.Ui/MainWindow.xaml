@@ -8,8 +8,9 @@
         xmlns:main="clr-namespace:raBooth.Ui.Views.Main"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
+        x:Name="Window"
         FontFamily="Oswald Regular"
-        Title="MainWindow" Height="1080" Width="1200"
+        Title="raBooth" Height="1080" Width="1200"
         d:DataContext="{d:DesignInstance main:MainViewModel, IsDesignTimeCreatable=True}">
 
     <Window.Resources>
@@ -58,19 +59,33 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <Grid>
+    <Grid Background="GhostWhite">
 
-        <Grid Background="GhostWhite">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
-                <Label HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -500 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
-                <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Viewbox Grid.Row="0" VerticalAlignment="Bottom" MaxHeight="120">
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
+                </Viewbox>
+                <Border Grid.Row="1"  HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
                     <Grid  Margin="50">
-                        <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
+                        <ScrollViewer  VerticalScrollBarVisibility="Auto" 
+                               HorizontalScrollBarVisibility="Disabled"
+                               
+                               MaxWidth="{Binding ElementName=Window, Path=ActualWidth}"
+                               MaxHeight="{Binding ElementName=Window, Path=ActualHeight}">
+                            <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
             </Grid>
@@ -83,15 +98,18 @@
                 <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="550"></ColumnDefinition>
+                        <ColumnDefinition Width="*" MaxWidth="550"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0">
-                        <Border 
+                        <Viewbox>
+
+                            <Border 
                             Visibility="{Binding Path=GetReadyMessageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
-                            <Label FontSize="200" Content="{x:Static local:Resources.AreYouReady}"></Label>
-                        </Border>
+                                <Label FontSize="200" Content="{x:Static local:Resources.AreYouReady}"></Label>
+                            </Border>
+                        </Viewbox>
                         <Border 
                             Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" 
@@ -113,14 +131,16 @@
                         </Border>
                     </Grid>
                     <Grid Grid.Column="1">
-                        <StackPanel VerticalAlignment="Center" 
-                                    HorizontalAlignment="Stretch">
+                        <Viewbox>
 
-                            <Border Width="470"
+                            <StackPanel VerticalAlignment="Center" 
+                                        HorizontalAlignment="Stretch">
+
+                                <Border Width="470"
                                     Height="530" 
                                     Margin="0">
 
-                                <Border 
+                                    <Border 
                                     Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                     Width="450"
                                     Height="500"
@@ -128,17 +148,17 @@
                                     CornerRadius="20"
                                     Background="White"
                             >
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="20" 
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="20" 
                                                           ShadowDepth="5"
                                                           Color="Black"
                                                           Opacity="0.3" />
-                                    </Border.Effect>
-                                    <Grid>
-                                        <StackPanel Visibility="{Binding Path=CaptureCountdownSecondsRemainingVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <Label FontSize="40" Margin="40 15 0 0" Content="{x:Static local:Resources.TakingPictureIn}"></Label>
+                                        </Border.Effect>
+                                        <Grid>
+                                            <StackPanel Visibility="{Binding Path=CaptureCountdownSecondsRemainingVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Label FontSize="40" Margin="40 15 0 0" Content="{x:Static local:Resources.TakingPictureIn}"></Label>
 
-                                            <TextBlock FontSize="350" 
+                                                <TextBlock FontSize="350" 
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center" 
                                                    Margin="0 -90 0 0"
@@ -146,8 +166,8 @@
                                                    Text="{Binding Path=CaptureCountdownSecondsRemaining}"
                                                    Foreground="Black"></TextBlock>
 
-                                        </StackPanel>
-                                        <fa:ImageAwesome 
+                                            </StackPanel>
+                                            <fa:ImageAwesome 
                                         Visibility="{Binding Path=CollagePageQrCodeSpinnerVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Icon="Spinner" 
                                         Spin="True" 
@@ -155,62 +175,62 @@
                                         Margin="10" 
                                         Height="350" 
                                         Width="350" />
-                                        <StackPanel Visibility="{Binding Path=CollagePageQrCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                            <StackPanel Visibility="{Binding Path=CollagePageQrCodeVisible, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                                 Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                            <Label FontSize="40" Margin="40 15 0 -30" Content="{x:Static local:Resources.YourPhotos}"></Label>
-                                            <Image Source="{Binding Path=CollagePageUrlQrCode}"
+                                                <Label FontSize="40" Margin="40 15 0 -30" Content="{x:Static local:Resources.YourPhotos}"></Label>
+                                                <Image Source="{Binding Path=CollagePageUrlQrCode}"
                                           
                                            Width="400"
                                            ClipToBounds="True"
                                            Height="450"></Image>
-                                        </StackPanel>
-                                    </Grid>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
                                 </Border>
-                            </Border>
 
-                            <Button  Style="{StaticResource FlatBlueButton}"
+                                <Button  Style="{StaticResource FlatBlueButton}"
                                      Command="{Binding Path=PrintCommand}"
-                                     IsEnabled="{Binding Path=PrintButtonVisible}"
+                                     IsEnabled="{Binding Path=PrintButtonEnabled}"
                                      Height="200"
                                      Margin="50 25">
-                                <TextBlock>
+                                    <TextBlock>
                                     <fa:FontAwesome Icon="Print" Margin="0 0 20 0"></fa:FontAwesome>
                                     <Run Text="{x:Static local:Resources.Print}"></Run>
-                                </TextBlock>
+                                    </TextBlock>
 
-                            </Button>
-                            <Button  Style="{StaticResource FlatButton}"
+                                </Button>
+                                <Button  Style="{StaticResource FlatButton}"
                                      Command="{Binding Path=RecaptureCommand}"
-                                     IsEnabled="{Binding Path=RecaptureButtonVisible}"
+                                     IsEnabled="{Binding Path=RecaptureButtonEnabled}"
                                      Height="200"
                                      Margin="50 25">
-                                <TextBlock>
+                                    <TextBlock>
                                     <fa:FontAwesome Icon="Refresh" Margin="0 0 20 0"></fa:FontAwesome>
                                     <Run Text="{x:Static local:Resources.Retake}"></Run>
-                                </TextBlock>
-                            </Button>
-                            <Button  Style="{StaticResource FlatButton}"
+                                    </TextBlock>
+                                </Button>
+                                <Button  Style="{StaticResource FlatButton}"
                                      Command="{Binding Path=CancelCommand}"
                                      Height="200"
                                      Margin="50 25">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock>
                                     <fa:FontAwesome Icon="Close" Margin="0 0 20 0"></fa:FontAwesome>
                                     <Run Text="{x:Static local:Resources.Close}"></Run>
-                                    </TextBlock>
-                                    <TextBlock Visibility="{Binding Path=CancelCommandCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        </TextBlock>
+                                        <TextBlock Visibility="{Binding Path=CancelCommandCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Run Text=" ("></Run>
                                     <Run Text="{Binding Path=CancelCommandCountdownSecondsRemaining}"></Run>
                                     <Run Text=")"></Run>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Viewbox>
+
                     </Grid>
                 </Grid>
             </Grid>
-        </Grid>
-        <Grid>
         </Grid>
     </Grid>
 

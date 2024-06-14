@@ -12,6 +12,7 @@ using raBooth.Core.Services.Printing;
 using raBooth.Core.Services.Storage;
 using raBooth.Core.Services.Web;
 using raBooth.Infrastructure.Services.FrameSource;
+using raBooth.Infrastructure.Services.Light;
 using raBooth.Infrastructure.Services.Printing;
 using raBooth.Infrastructure.Services.Storage;
 using raBooth.Infrastructure.Services.Web;
@@ -19,6 +20,7 @@ using raBooth.Ui.Configuration;
 using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
+using ILightManager = raBooth.Core.Services.Light.ILightManager;
 
 namespace raBooth.Ui
 {
@@ -65,12 +67,16 @@ namespace raBooth.Ui
             services.Configure<UiConfiguration>(configuration.GetSection(UiConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<UiConfiguration>>().Value);
 
+            services.Configure<LightsConfiguration>(configuration.GetSection(LightsConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<LightsConfiguration>>().Value);
+
             services.AddTransient<ICollageStorageService, WebCollageStorageService>();
             //services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
             services.AddTransient<IWebHostApiClient, WebHostApiClient>();
 
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
+            services.AddTransient<ILightManager, LightManager>();
             services.AddTransient<PrintService>();
             services.AddTransient<QrCodeService>();
             services.AddTransient<MainWindow>();

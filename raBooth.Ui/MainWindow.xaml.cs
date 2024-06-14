@@ -38,6 +38,7 @@ namespace raBooth.Ui
             base.OnKeyUp(e);
         }
 
+
         #endregion
 
         private void ToggleFullscreen()
