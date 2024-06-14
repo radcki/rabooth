@@ -355,6 +355,10 @@ namespace raBooth.Ui.Views.Main
                 _collageCaptureCancellationTokenSource = new CancellationTokenSource();
 
                 var cancellationToken = _collageCaptureCancellationTokenSource.Token;
+                if (Layout == default)
+                {
+                    return;
+                }
                 var collage = Layout.CollageLayout;
                 while (collage.HasUncapturedItems() && !cancellationToken.IsCancellationRequested)
                 {

@@ -8,8 +8,9 @@
         xmlns:main="clr-namespace:raBooth.Ui.Views.Main"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
+        x:Name="Window"
         FontFamily="Oswald Regular"
-        Title="MainWindow" Height="1080" Width="1200"
+        Title="raBooth" Height="1080" Width="1200"
         d:DataContext="{d:DesignInstance main:MainViewModel, IsDesignTimeCreatable=True}">
 
     <Window.Resources>
@@ -60,39 +61,56 @@
     </Window.Resources>
     <Grid Background="GhostWhite">
 
-            <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="1" Margin="20" Visibility="{Binding Path=LayoutSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
-                    <Label HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 -500 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
-                    <Border HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
-                        <Grid  Margin="50">
+                <Viewbox Grid.Row="0" VerticalAlignment="Bottom" MaxHeight="120">
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
+                </Viewbox>
+                <Border Grid.Row="1"  HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
+                    <Grid  Margin="50">
+                        <ScrollViewer  VerticalScrollBarVisibility="Auto" 
+                               HorizontalScrollBarVisibility="Disabled"
+                               
+                               MaxWidth="{Binding ElementName=Window, Path=ActualWidth}"
+                               MaxHeight="{Binding ElementName=Window, Path=ActualHeight}">
                             <layoutSelection:LayoutSelectionControl DataContext="{Binding Path=LayoutSelectionViewModel}"></layoutSelection:LayoutSelectionControl>
-                        </Grid>
-                    </Border>
-                </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
 
-                <Grid Grid.Row="1" Margin="20"  Visibility="{Binding Path=CollageCaptureVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"></RowDefinition>
-                        <RowDefinition Height="Auto"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="550"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="0">
+            <Grid Grid.Row="1" Margin="20"  Visibility="{Binding Path=CollageCaptureVisible, Converter={StaticResource BooleanToVisibilityConverter }}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*" MaxWidth="550"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Viewbox>
+
                             <Border 
                             Visibility="{Binding Path=GetReadyMessageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center">
                                 <Label FontSize="200" Content="{x:Static local:Resources.AreYouReady}"></Label>
                             </Border>
-                            <Border 
+                        </Viewbox>
+                        <Border 
                             Visibility="{Binding Path=CollagePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center" 
@@ -100,21 +118,23 @@
                             BorderBrush="White" 
                             BorderThickness="0" 
                             CornerRadius="0">
-                                <Border.Effect>
-                                    <DropShadowEffect 
+                            <Border.Effect>
+                                <DropShadowEffect 
                                 BlurRadius="30" 
                                 ShadowDepth="10"
                                 Color="Black"
                                 Opacity="0.3" />
-                                </Border.Effect>
-                                <Viewbox Stretch="Uniform">
-                                    <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
-                                </Viewbox>
-                            </Border>
-                        </Grid>
-                        <Grid Grid.Column="1">
+                            </Border.Effect>
+                            <Viewbox Stretch="Uniform">
+                                <Image Source="{Binding Path=Preview}" HorizontalAlignment="Center" Stretch="None"></Image>
+                            </Viewbox>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Viewbox>
+
                             <StackPanel VerticalAlignment="Center" 
-                                    HorizontalAlignment="Stretch">
+                                        HorizontalAlignment="Stretch">
 
                                 <Border Width="470"
                                     Height="530" 
@@ -206,10 +226,12 @@
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                        </Grid>
+                        </Viewbox>
+
                     </Grid>
                 </Grid>
             </Grid>
+        </Grid>
     </Grid>
 
 </Window>
