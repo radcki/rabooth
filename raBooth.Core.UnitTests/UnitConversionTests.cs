@@ -1,6 +1,7 @@
 using FluentAssertions;
 using OpenCvSharp;
 using raBooth.Core.Helpers;
+using System.Runtime.InteropServices;
 
 namespace raBooth.Core.UnitTests
 {
@@ -34,6 +35,25 @@ namespace raBooth.Core.UnitTests
             //Assert
             conversionResult.Height.Should().Be(expectedResult.Height);
             conversionResult.Width.Should().Be(expectedResult.Width);
+
+        }
+
+        [Fact]
+        public void a()
+        {
+            var paths = FindExePath("cupti64_2022.3.0.dll").ToList();
+
+        }
+        public static IEnumerable<string> FindExePath(string exe)
+        {
+            exe = Environment.ExpandEnvironmentVariables(exe);
+
+            foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            {
+                string path = test.Trim();
+                if (!String.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, exe)))
+                    yield return Path.GetFullPath(path);
+            }
         }
     }
 }

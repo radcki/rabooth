@@ -6,11 +6,14 @@ using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.ML.OnnxRuntime;
 using raBooth.Core.Model;
+using raBooth.Core.Services.FaceDetection;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
 using raBooth.Core.Services.Storage;
 using raBooth.Core.Services.Web;
+using raBooth.Infrastructure.Services.FaceDetection;
 using raBooth.Infrastructure.Services.FrameSource;
 using raBooth.Infrastructure.Services.Light;
 using raBooth.Infrastructure.Services.Printing;
@@ -49,6 +52,9 @@ namespace raBooth.Ui
 
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            
+
+
             services.Configure<WebcamFrameSourceConfiguration>(configuration.GetSection(nameof(WebcamFrameSourceConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebcamFrameSourceConfiguration>>().Value);
 
@@ -77,6 +83,8 @@ namespace raBooth.Ui
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
             services.AddSingleton<IFrameSource, WebcamFrameSource>();
             services.AddTransient<ILightManager, LightManager>();
+            //services.AddTransient<IFaceDetectionService, OnnxFaceDetectionService>();
+            services.AddTransient<IFaceDetectionService, CascadeFaceDetectionService>();
             services.AddTransient<PrintService>();
             services.AddTransient<QrCodeService>();
             services.AddTransient<MainWindow>();

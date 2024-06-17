@@ -9,6 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Services\FaceDetection\haarcascade_eye_tree_eyeglasses.xml" />
+    <None Remove="Services\FaceDetection\haarcascade_frontalface_default.xml" />
+    <None Remove="Services\FaceDetection\haarcascade_smile.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Services\FaceDetection\haarcascade_frontalface_default.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Services\FaceDetection\haarcascade_smile.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FaceONNX" Version="4.0.2.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.15.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OpenCvSharp4.WpfExtensions" Version="4.9.0.20240103" />
@@ -18,6 +35,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\raBooth.Core\raBooth.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Services\FaceDetection\haarcascade_eye_tree_eyeglasses.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

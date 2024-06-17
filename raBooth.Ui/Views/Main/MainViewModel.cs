@@ -1,10 +1,13 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System.Diagnostics;
+using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 using raBooth.Core.Helpers;
 using raBooth.Core.Model;
+using raBooth.Core.Services.FaceDetection;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Light;
 using raBooth.Core.Services.Storage;
@@ -16,7 +19,7 @@ using raBooth.Ui.UserControls.LayoutSelection;
 
 namespace raBooth.Ui.Views.Main
 {
-    public class MainViewModel : ObservableObject
+    public class MainViewModel : ObservableObject, IDisposable
     {
         private readonly IFrameSource _frameSource;
         private readonly PrintService _printService;
@@ -26,8 +29,10 @@ namespace raBooth.Ui.Views.Main
         private readonly ICollageStorageService _collageStorageService;
         private readonly QrCodeService _qrCodeService;
         private readonly ILightManager _lightManager;
+        private readonly IFaceDetectionService _faceDetectionService;
 
         private BitmapSource? _preview;
+        private BitmapSource? _cameraPreview;
         private BitmapSource? _collagePageUrlQrCode;
         private LayoutSelectionViewModel _layoutSelectionViewModel;
         private SelectableCollageLayout? _layout;
@@ -49,8 +54,10 @@ namespace raBooth.Ui.Views.Main
         private bool _collagePageQrCodeSpinnerVisible;
         private bool _getReadyMessageVisible;
         private bool _collagePreviewVisible;
+        private int _windowWidth;
+        private int _windowHeight;
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService, CaptureConfiguration captureConfiguration, ILightManager lightManager)
+        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService, CaptureConfiguration captureConfiguration, ILightManager lightManager, IFaceDetectionService faceDetectionService)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
@@ -60,6 +67,7 @@ namespace raBooth.Ui.Views.Main
             _qrCodeService = qrCodeService;
             _captureConfiguration = captureConfiguration;
             _lightManager = lightManager;
+            _faceDetectionService = faceDetectionService;
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
             _ = PrepareLayouts();
 
@@ -131,6 +139,8 @@ namespace raBooth.Ui.Views.Main
 
         private void OnLiveViewFrameAcquired(object? sender, FrameAcquiredEventArgs e)
         {
+            _ = UpdateCameraPreview(e.Frame);
+
             if (Layout == default)
             {
                 Preview = default;
@@ -140,7 +150,21 @@ namespace raBooth.Ui.Views.Main
             Layout.CollageLayout.UpdateNextUncapturedItemSourceImage(e.Frame);
             var previewMat = Layout.CollageLayout.GetViewWithNextUncapturedItemPreview();
 
-            App.Current.Dispatcher.Invoke(() => { Preview = previewMat.ToBitmapSource(); });
+            App.Current?.Dispatcher.Invoke(() => { Preview = previewMat.ToBitmapSource(); });
+        }
+
+        private Task UpdateCameraPreview(Mat frame)
+        {
+            var cameraPreviewMat = frame.Clone();
+            ImageProcessing.ResizeToCover(cameraPreviewMat, new Size(WindowWidth, WindowHeight));
+            var faces = _faceDetectionService.DetectFaces(cameraPreviewMat);
+            foreach (var detectedFace in faces)
+            {
+                Cv2.Rectangle(cameraPreviewMat, detectedFace.FaceArea, Scalar.Blue, 3);
+            }
+            
+            App.Current?.Dispatcher.Invoke(() => { CameraPreview = cameraPreviewMat.ToBitmapSource(); });
+            return Task.CompletedTask;
         }
 
         public SelectableCollageLayout? Layout
@@ -153,6 +177,7 @@ namespace raBooth.Ui.Views.Main
                     OnPropertyChanged(nameof(CaptureCommand));
                     OnPropertyChanged(nameof(ResetCommand));
                     OnPropertyChanged(nameof(SaveCommand));
+                    OnPropertyChanged(nameof(CameraPreviewVisible));
                 }
 
                 UpdateComponentsVisibility();
@@ -231,6 +256,18 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _collagePreviewVisible, value);
         }
 
+        public int WindowWidth
+        {
+            get => _windowWidth;
+            set => SetProperty(ref _windowWidth, value);
+        }
+
+        public int WindowHeight
+        {
+            get => _windowHeight;
+            set => SetProperty(ref _windowHeight, value);
+        }
+
         public LayoutSelectionViewModel LayoutSelectionViewModel
         {
             get => _layoutSelectionViewModel;
@@ -266,6 +303,13 @@ namespace raBooth.Ui.Views.Main
             get => _preview;
             set => SetProperty(ref _preview, value);
         }
+        public BitmapSource? CameraPreview
+        {
+            get => _cameraPreview;
+            set => SetProperty(ref _cameraPreview, value);
+        }
+
+        public bool CameraPreviewVisible => Layout == default;
 
 
         public IRelayCommand StopCommand => new AsyncRelayCommand(ExecuteStopCommand);
@@ -346,10 +390,10 @@ namespace raBooth.Ui.Views.Main
                 PrintButtonEnabled = false;
                 GetReadyMessageVisible = true;
                 CollagePreviewVisible = false;
+                await _lightManager.SetLightsToHighBrightness();
                 await Task.Delay(_captureConfiguration.GetReadyMessageDisplayTime);
                 GetReadyMessageVisible = false;
                 CollagePreviewVisible = true;
-                await _lightManager.SetLightsToHighBrightness();
 
 
                 _collageCaptureCancellationTokenSource = new CancellationTokenSource();
@@ -433,5 +477,19 @@ namespace raBooth.Ui.Views.Main
             }
         }
 
+        #region IDisposable
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            LayoutSelectionViewModel.LayoutSelected -= OnLayoutSelected;
+            _frameSource.LiveViewFrameAcquired -= OnLiveViewFrameAcquired;
+            _frameSource.Dispose();
+            _collageCaptureCancellationTokenSource.Dispose();
+            _cancelCancellationTokenSource.Dispose();
+            _cancelStorageCancellationTokenSource.Dispose();
+        }
+
+        #endregion
     }
 }
