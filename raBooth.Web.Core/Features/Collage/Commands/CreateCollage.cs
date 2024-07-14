@@ -35,7 +35,7 @@ public class CreateCollage
 
             db.Collages.Add(collage);
             await db.SaveChangesAsync(cancellationToken);
-            await photoStorage.StoreImage(collagePhoto, request.Image.Data);
+            await photoStorage.StoreImage(collagePhoto, collage, request.Image.Data);
             
             return new Result
             {
