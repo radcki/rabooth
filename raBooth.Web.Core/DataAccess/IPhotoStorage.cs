@@ -9,7 +9,7 @@ namespace raBooth.Web.Core.DataAccess
 {
     public interface IPhotoStorage
     {
-        public Task StoreImage(IPhoto reference, byte[] data);
-        public Task<byte[]> GetImage(IPhoto reference);
+        public Task StoreImage(IPhoto reference, Collage collage, byte[] data);
+        public Task<byte[]> GetImage(IPhoto reference, Collage collage);
     }
 }

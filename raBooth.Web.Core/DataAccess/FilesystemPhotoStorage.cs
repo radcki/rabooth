@@ -10,17 +10,17 @@ public class FilesystemPhotoStorageConfiguration
 
 public class FilesystemPhotoStorage(FilesystemPhotoStorageConfiguration configuration) : IPhotoStorage
 {
-    public async Task StoreImage(IPhoto reference, byte[] data)
+    public async Task StoreImage(IPhoto reference, Collage collage, byte[] data)
     {
-        var filePath = GetImagePath(reference);
+        var filePath = GetImagePath(reference, collage);
         var fileDirectory = Path.GetDirectoryName(filePath);
         Directory.CreateDirectory(fileDirectory);
         await File.WriteAllBytesAsync(filePath, data);
     }
 
-    public async Task<byte[]> GetImage(IPhoto reference)
+    public async Task<byte[]> GetImage(IPhoto reference, Collage collage)
     {
-        var filePath = GetImagePath(reference);
+        var filePath = GetImagePath(reference, collage);
         if (File.Exists(filePath))
         {
             return await File.ReadAllBytesAsync(filePath);
@@ -29,10 +29,10 @@ public class FilesystemPhotoStorage(FilesystemPhotoStorageConfiguration configur
         throw new FileNotFoundException();
     }
 
-    private string GetImagePath(IPhoto reference)
+    private string GetImagePath(IPhoto reference, Collage collage)
     {
 
-        var directory = Path.Combine(configuration.DirectoryPath, $"{reference.CaptureDateTime.ToString("yyyy-MM-dd_HHmmss")}_{reference.CollageId.ToString()}");
+        var directory = Path.Combine(configuration.DirectoryPath, $"{collage.CaptureDateTime.ToString("yyyy-MM-dd_HHmmss")}_{reference.CollageId.ToString()}");
         var filename = $"{reference.PhotoId.ToString()}.jpg";
         return Path.Combine(directory, filename);
     }
