@@ -32,7 +32,7 @@ public class AddSourcePhoto
             };
             collage.SourcePhotos.Add(sourcePhoto);
             await db.SaveChangesAsync(cancellationToken);
-            await photoStorage.StoreImage(sourcePhoto, request.FileDto.Data);
+            await photoStorage.StoreImage(sourcePhoto, collage, request.FileDto.Data);
 
             return new Result { };
         }

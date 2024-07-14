@@ -39,7 +39,7 @@ namespace raBooth.Web.Core.Features.Collage.Queries
                                    : collage.SourcePhotos.FirstOrDefault(x => x.PhotoId == request.PhotoId)
                                      ?? throw new KeyNotFoundException($"Not found collage photo with id {request.PhotoId}");
 
-                var data = await photoStorage.GetImage(photo);
+                var data = await photoStorage.GetImage(photo, collage);
 
                 return new Result
                 {

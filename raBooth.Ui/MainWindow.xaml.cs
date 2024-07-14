@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -38,6 +39,19 @@ namespace raBooth.Ui
             base.OnKeyUp(e);
         }
 
+        #region Overrides of Window
+
+        /// <inheritdoc />
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (DataContext is MainViewModel viewModel)
+            {
+                viewModel.Dispose();
+            }
+            base.OnClosing(e);
+        }
+
+        #endregion
 
         #endregion
 

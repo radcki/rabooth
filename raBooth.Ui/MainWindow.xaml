@@ -7,8 +7,12 @@
         xmlns:layoutSelection="clr-namespace:raBooth.Ui.UserControls.LayoutSelection"
         xmlns:main="clr-namespace:raBooth.Ui.Views.Main"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:infrastructure="clr-namespace:raBooth.Ui.Infrastructure"
         mc:Ignorable="d"
         x:Name="Window"
+        infrastructure:SizeObserver.Observe="True"
+        infrastructure:SizeObserver.ObservedWidth="{Binding WindowWidth, Mode=OneWayToSource}"
+        infrastructure:SizeObserver.ObservedHeight="{Binding WindowHeight, Mode=OneWayToSource}"
         FontFamily="Oswald Regular"
         Title="raBooth" Height="1080" Width="1200"
         d:DataContext="{d:DesignInstance main:MainViewModel, IsDesignTimeCreatable=True}">
@@ -60,6 +64,11 @@
         </Style>
     </Window.Resources>
     <Grid Background="GhostWhite">
+        <Grid Visibility="{Binding Path=CameraPreviewVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Image ClipToBounds="True" Source="{Binding Path=CameraPreview}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="UniformToFill"></Image>
+            <!--<Border BorderBrush="GhostWhite" BorderThickness="50" CornerRadius="100" Margin="0"></Border>-->
+            <!--<Border BorderBrush="GhostWhite" BorderThickness="50" CornerRadius="0" Margin="0"></Border>-->
+        </Grid>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -75,7 +84,14 @@
                 </Grid.RowDefinitions>
 
                 <Viewbox Grid.Row="0" VerticalAlignment="Bottom" MaxHeight="120">
-                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}"></Label>
+                    <Label Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}">
+                        <Label.Effect>
+                            <DropShadowEffect BlurRadius="5" 
+                      ShadowDepth="5"
+                      Color="Black"
+                      Opacity="0.5" />
+                        </Label.Effect>
+                    </Label>
                 </Viewbox>
                 <Border Grid.Row="1"  HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" CornerRadius="0">
                     <Grid  Margin="50">

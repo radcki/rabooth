@@ -12,6 +12,10 @@ namespace raBooth.Core.Helpers
     {
         public static void ResizeToCover(Mat image, Size size)
         {
+            if (size == default)
+            {
+                return;
+            }
             if (image.Rows == 0 || image.Cols == 0)
             {
                 var emptyImage = new Mat(size, MatType.CV_8UC3, new Scalar(255,255,255));
@@ -57,5 +61,15 @@ namespace raBooth.Core.Helpers
             quality = Math.Clamp(quality, 0, 100);
             return image.ImEncode(".jpg", new ImageEncodingParam(ImwriteFlags.JpegQuality, quality));
         }
+
+        public static Rect ScaleRect(Rect rect, double factor)
+        {
+            return new Rect((int)(rect.X * factor), (int)(rect.Y * factor), (int)(rect.Width * factor), (int)(rect.Height * factor));
+        }
+        public static Rect MoveRect(Rect rect, Point vector)
+        {
+            return new Rect(rect.Location + vector, rect.Size);
+        }
+
     }
 }
