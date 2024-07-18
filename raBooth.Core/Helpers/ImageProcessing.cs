@@ -18,7 +18,7 @@ namespace raBooth.Core.Helpers
             }
             if (image.Rows == 0 || image.Cols == 0)
             {
-                var emptyImage = new Mat(size, MatType.CV_8UC3, new Scalar(255,255,255));
+                var emptyImage = new Mat(size, MatType.CV_8UC3, new Scalar(255, 255, 255));
                 emptyImage.CopyTo(image);
                 return;
             }
@@ -71,5 +71,25 @@ namespace raBooth.Core.Helpers
             return new Rect(rect.Location + vector, rect.Size);
         }
 
+        public static Mat RotateImage(Mat image, double angle)
+        {
+            if (angle == 0)
+                return image;
+            var height = image.Rows;
+            var width = image.Cols;
+
+            var rotationMatrix = Cv2.GetRotationMatrix2D(new((float)width / 2, (float)height / 2), angle, 1);
+            var dest = new Mat();
+            Cv2.WarpAffine(image, dest, rotationMatrix, new(width, height), InterpolationFlags.Linear);
+            return dest;
+        }
+
+        public static IEnumerable<Point> TransformPoints(this IEnumerable<Point> points, Mat rotMat)
+        {
+            Mat transformedPoints = new Mat();
+            Cv2.Transform(InputArray.Create(points), transformedPoints, rotMat);
+            transformedPoints.GetArray(out Point[] results);
+            return results;
+        }
     }
 }

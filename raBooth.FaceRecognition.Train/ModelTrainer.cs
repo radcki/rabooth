@@ -117,6 +117,7 @@ namespace raBooth.FaceRecognition.Train
 
             return datasetImage;
         }
+        private Rect CornersToRect(Point topLeft, Point bottomRight) => new Rect(topLeft, new Size(bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y));
 
         private IEnumerable<Point> TransformPoints(IEnumerable<Point> points, Mat rotMat)
         {
@@ -126,7 +127,6 @@ namespace raBooth.FaceRecognition.Train
             return results;
         }
 
-        private Rect CornersToRect(Point topLeft, Point bottomRight) => new Rect(topLeft, new Size(bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y));
         private Mat GetAlignedFace(Mat image, DetectedFace detectedFace)
         {
             var eyes = _faceDetectionService.DetectEyes(image, detectedFace);

@@ -11,8 +11,11 @@ using raBooth.Core.Services.FaceDetection;
 using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Light;
 using raBooth.Core.Services.Storage;
+using raBooth.Infrastructure.Services.AutoCrop;
+using raBooth.Infrastructure.Services.FaceAlignment;
 using raBooth.Infrastructure.Services.Printing;
 using raBooth.Ui.Configuration;
+using raBooth.Ui.Infrastructure;
 using raBooth.Ui.Model;
 using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
@@ -26,10 +29,13 @@ namespace raBooth.Ui.Views.Main
         private readonly ILayoutGenerationService _gridLayoutGenerationService;
         private readonly LayoutsConfiguration _layoutsConfiguration;
         private readonly CaptureConfiguration _captureConfiguration;
+        private readonly UiConfiguration _uiConfiguration;
         private readonly ICollageStorageService _collageStorageService;
         private readonly QrCodeService _qrCodeService;
         private readonly ILightManager _lightManager;
         private readonly IFaceDetectionService _faceDetectionService;
+        private readonly FaceAlignmentService _faceAlignmentService;
+        private readonly AutoCropService _autoCropService;
 
         private BitmapSource? _preview;
         private BitmapSource? _cameraPreview;
@@ -56,8 +62,22 @@ namespace raBooth.Ui.Views.Main
         private bool _collagePreviewVisible;
         private int _windowWidth;
         private int _windowHeight;
+        private bool _cameraPreviewVisible;
+        private bool _titleVisible;
+        private List<DetectedFace> _detectedFaces = [];
 
-        public MainViewModel(IFrameSource frameSource, ILayoutGenerationService gridLayoutGenerationService, LayoutsConfiguration layoutsConfiguration, PrintService printService, ICollageStorageService collageStorageService, QrCodeService qrCodeService, CaptureConfiguration captureConfiguration, ILightManager lightManager, IFaceDetectionService faceDetectionService)
+        public MainViewModel(IFrameSource frameSource,
+                             ILayoutGenerationService gridLayoutGenerationService,
+                             LayoutsConfiguration layoutsConfiguration,
+                             PrintService printService,
+                             ICollageStorageService collageStorageService,
+                             QrCodeService qrCodeService,
+                             CaptureConfiguration captureConfiguration,
+                             ILightManager lightManager,
+                             IFaceDetectionService faceDetectionService,
+                             BackgroundFaceDetector faceDetector,
+                             UiConfiguration uiConfiguration,
+                             AutoCropService autoCropService)
         {
             _frameSource = frameSource;
             _gridLayoutGenerationService = gridLayoutGenerationService;
@@ -68,15 +88,74 @@ namespace raBooth.Ui.Views.Main
             _captureConfiguration = captureConfiguration;
             _lightManager = lightManager;
             _faceDetectionService = faceDetectionService;
+            FaceDetector = faceDetector;
+            _uiConfiguration = uiConfiguration;
+            _autoCropService = autoCropService;
+            _faceAlignmentService = new FaceAlignmentService(faceDetectionService);
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
+
+
             _ = PrepareLayouts();
 
             LayoutSelectionViewModel.LayoutSelected += OnLayoutSelected;
             frameSource.LiveViewFrameAcquired += OnLiveViewFrameAcquired;
             frameSource.Start();
+            FaceDetector.VisibleFacesCountChanged += OnVisibleFacesCountChanged;
             UpdateComponentsVisibility();
             ConfigureCaptureTimer();
             ConfigureCancelTimer();
+            EnableApplicationSleepMode();
+        }
+
+        private void OnVisibleFacesCountChanged(object? sender, VisibleFacesCountChangedEventArgs e)
+        {
+            if (e.FaceCount > 0)
+            {
+                _detectedFaces = FaceDetector.VisibleFaces.ToList();
+                WakeUpApplication();
+            }
+            else
+            {
+                _ = DebounceSleepMode();
+            }
+        }
+
+        private async Task DebounceSleepMode()
+        {
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < _uiConfiguration.EnableSleepModeTime)
+            {
+                if (FaceDetector.VisibleFacesCount != 0 || Layout != default || TitleVisible)
+                {
+                    return;
+                }
+
+                await Task.Delay(100);
+            }
+
+            await EnableApplicationSleepMode();
+        }
+
+        public void WakeUpApplication()
+        {
+            if (Layout == default)
+            {
+                LayoutSelectionVisible = true;
+                CameraPreviewVisible = true;
+                TitleVisible = false;
+                _ = DebounceSleepMode();
+            }
+        }
+
+        private async Task EnableApplicationSleepMode()
+        {
+            if (Layout == default)
+            {
+                await ExecuteCancelCommand();
+                LayoutSelectionVisible = false;
+                CameraPreviewVisible = true;
+                TitleVisible = true;
+            }
         }
 
         private async void OnLayoutSelected(object? sender, CollageLayoutSelectedEventArgs e)
@@ -90,7 +169,6 @@ namespace raBooth.Ui.Views.Main
 
         private void ConfigureCaptureTimer()
         {
-
             _captureTimer = new CountdownTimer(_captureConfiguration.CaptureCountdownLength, TimeSpan.FromMilliseconds(100));
 
             _captureTimer.OnCountdownTick += (_, args) =>
@@ -108,9 +186,9 @@ namespace raBooth.Ui.Views.Main
                                            _layout?.CollageLayout.CaptureNextItem(image);
                                        };
         }
+
         private void ConfigureCancelTimer()
         {
-
             _cancelTimer = new CountdownTimer(_captureConfiguration.ExitCountdownLength, TimeSpan.FromMilliseconds(100));
 
             _cancelTimer.OnCountdownTick += (_, args) => CancelCommandCountdownSecondsRemaining = 1 + (int)args.RemainingTime.Seconds;
@@ -147,22 +225,22 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
-            Layout.CollageLayout.UpdateNextUncapturedItemSourceImage(e.Frame);
-            var previewMat = Layout.CollageLayout.GetViewWithNextUncapturedItemPreview();
+            var croppedFrame = _autoCropService.GetFrameCroppedToFaces(e.Frame);
+            Layout?.CollageLayout.UpdateNextUncapturedItemSourceImage(croppedFrame);
+            if (Layout != default)
+            {
+                var previewMat = Layout.CollageLayout.GetViewWithNextUncapturedItemPreview();
 
-            App.Current?.Dispatcher.Invoke(() => { Preview = previewMat.ToBitmapSource(); });
+                App.Current?.Dispatcher.Invoke(() => { Preview = previewMat.ToBitmapSource(); });
+            }
         }
 
         private Task UpdateCameraPreview(Mat frame)
         {
+            FaceDetector.SubmitNewFrame(frame);
             var cameraPreviewMat = frame.Clone();
+
             ImageProcessing.ResizeToCover(cameraPreviewMat, new Size(WindowWidth, WindowHeight));
-            var faces = _faceDetectionService.DetectFaces(cameraPreviewMat);
-            foreach (var detectedFace in faces)
-            {
-                Cv2.Rectangle(cameraPreviewMat, detectedFace.FaceArea, Scalar.Blue, 3);
-            }
-            
             App.Current?.Dispatcher.Invoke(() => { CameraPreview = cameraPreviewMat.ToBitmapSource(); });
             return Task.CompletedTask;
         }
@@ -195,6 +273,8 @@ namespace raBooth.Ui.Views.Main
             get => _cancelCommandCountdownSecondsRemaining;
             set => SetProperty(ref _cancelCommandCountdownSecondsRemaining, value);
         }
+
+        public BackgroundFaceDetector FaceDetector { get; init; }
 
         public bool LayoutSelectionVisible
         {
@@ -256,6 +336,12 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _collagePreviewVisible, value);
         }
 
+        public bool TitleVisible
+        {
+            get => _titleVisible;
+            set => SetProperty(ref _titleVisible, value);
+        }
+
         public int WindowWidth
         {
             get => _windowWidth;
@@ -281,35 +367,23 @@ namespace raBooth.Ui.Views.Main
         }
 
 
-        private void UpdateComponentsVisibility()
-        {
-            if (Layout == default)
-            {
-                LayoutSelectionVisible = true;
-                CollageCaptureVisible = false;
-                CollagePageQrCodeSpinnerVisible = false;
-                CollagePageQrCodeVisible = false;
-                CollagePageUrlQrCode = default;
-            }
-            else
-            {
-                LayoutSelectionVisible = false;
-                CollageCaptureVisible = true;
-            }
-        }
-
         public BitmapSource? Preview
         {
             get => _preview;
             set => SetProperty(ref _preview, value);
         }
+
         public BitmapSource? CameraPreview
         {
             get => _cameraPreview;
             set => SetProperty(ref _cameraPreview, value);
         }
 
-        public bool CameraPreviewVisible => Layout == default;
+        public bool CameraPreviewVisible
+        {
+            get => _cameraPreviewVisible;
+            set => SetProperty(ref _cameraPreviewVisible, value);
+        }
 
 
         public IRelayCommand StopCommand => new AsyncRelayCommand(ExecuteStopCommand);
@@ -318,7 +392,35 @@ namespace raBooth.Ui.Views.Main
         public IRelayCommand CaptureCommand => new AsyncRelayCommand(ExecuteCaptureCommand);
         public IRelayCommand ResetCommand => new AsyncRelayCommand(ExecuteResetCommand);
         public IRelayCommand SaveCommand => new AsyncRelayCommand(ExecuteSaveCommand);
+        public IRelayCommand WakUpCommand => new AsyncRelayCommand(WakeUpCommandExecute);
+
+        private Task WakeUpCommandExecute()
+        {
+            return Task.Run(WakeUpApplication);
+        }
+
         public IRelayCommand RecaptureCommand => new AsyncRelayCommand(ExecuteRecaptureCommand);
+
+
+        private void UpdateComponentsVisibility()
+        {
+            if (Layout == default)
+            {
+                LayoutSelectionVisible = true;
+                CameraPreviewVisible = true;
+                CollageCaptureVisible = false;
+                CollagePageQrCodeSpinnerVisible = false;
+                CollagePageQrCodeVisible = false;
+                CollagePageUrlQrCode = default;
+                _ = DebounceSleepMode();
+            }
+            else
+            {
+                LayoutSelectionVisible = false;
+                CollageCaptureVisible = true;
+                CameraPreviewVisible = false;
+            }
+        }
 
         private async Task ExecuteRecaptureCommand()
         {
@@ -361,6 +463,7 @@ namespace raBooth.Ui.Views.Main
             {
                 _captureTimer.Cancel();
             }
+
             Layout.CollageLayout.Clear();
             Layout = default;
 
@@ -403,6 +506,7 @@ namespace raBooth.Ui.Views.Main
                 {
                     return;
                 }
+
                 var collage = Layout.CollageLayout;
                 while (collage.HasUncapturedItems() && !cancellationToken.IsCancellationRequested)
                 {
@@ -414,7 +518,7 @@ namespace raBooth.Ui.Views.Main
                 PrintButtonEnabled = true;
                 StartCancellationCountdown();
                 await ExecuteSaveCommand();
-                await _lightManager.SetLightsToLowBrightness();
+                //await _lightManager.SetLightsToLowBrightness();
             }
             finally
             {
@@ -457,10 +561,10 @@ namespace raBooth.Ui.Views.Main
             progress.ProgressChanged += OnStoreCollageProgressChanged;
             CollagePageQrCodeSpinnerVisible = true;
             _ = Task.Run(async () =>
-                     {
-                         await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
-                         progress.ProgressChanged -= OnStoreCollageProgressChanged;
-                     });
+                         {
+                             await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
+                             progress.ProgressChanged -= OnStoreCollageProgressChanged;
+                         });
         }
 
         private void OnStoreCollageProgressChanged(object? sender, StoreCollageProgress e)
@@ -469,7 +573,6 @@ namespace raBooth.Ui.Views.Main
             {
                 App.Current?.Dispatcher.Invoke(() =>
                                                {
-
                                                    CollagePageUrlQrCode = _qrCodeService.GetQrCodeBitmapForUrl(e.CollagePageUrl).ToBitmapSource();
                                                    CollagePageQrCodeSpinnerVisible = false;
                                                    CollagePageQrCodeVisible = true;

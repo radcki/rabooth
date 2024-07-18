@@ -9,6 +9,7 @@ using OpenCvSharp;
 using OpenCvSharp.Face;
 using raBooth.Core.Helpers;
 using raBooth.Core.Services.FaceDetection;
+using UMapx.Imaging;
 
 namespace raBooth.Infrastructure.Services.FaceDetection
 {
@@ -36,8 +37,37 @@ namespace raBooth.Infrastructure.Services.FaceDetection
             Cv2.CvtColor(src, grey, ColorConversionCodes.BGR2GRAY);
             var small = new Mat();
             Cv2.Resize(grey, small, new Size(0, 0), faceScaling, faceScaling);
+
             var sw = Stopwatch.StartNew();
-            var faces = _faceClassifier.DetectMultiScale(small, 1.1, 8);
+            var faces = new List<Rect>();
+            foreach (var angle in new[] { 0, -25, 25 })
+            {
+                var rotatedSmall = ImageProcessing.RotateImage(small, angle);
+                var detectedFaces = _faceClassifier.DetectMultiScale(rotatedSmall, 1.1, 3);
+                if (angle != 0 && detectedFaces.Any())
+                {
+                    foreach (var detectedFace in detectedFaces)
+                    {
+                        var mask = new Mat(rotatedSmall.Size(), MatType.CV_8UC1, new Scalar(0));
+                        mask[detectedFace].SetTo(new Scalar(255));
+                        var unrotatedMask = ImageProcessing.RotateImage(mask, -angle);
+ 
+                        faces.Add(Cv2.BoundingRect(unrotatedMask));
+                    }
+                }
+                else
+                {
+
+                    faces.AddRange(detectedFaces);
+                }
+
+                if (detectedFaces.Any())
+                {
+                    break;
+                }
+            }
+
+
             var t1 = sw.Elapsed.TotalMilliseconds;
             sw.Restart();
             foreach (var face in faces)
@@ -48,6 +78,7 @@ namespace raBooth.Infrastructure.Services.FaceDetection
 
             }
         }
+
         public DetectedEyes? DetectEyes(Mat image, DetectedFace detectedFace)
         {
 
