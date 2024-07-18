@@ -17,13 +17,14 @@ public class CollageItem
     public DateTime? CaptureUtcDate { get; private set; }
     private Mat SourceImage { get; set; } = new();
     private bool _isCaptured { get; set; }
-    private readonly object _sourceImageLock = new ();
+    private Rect? SourceImageCrop { get; set; }
+    private readonly object _sourceImageLock = new();
 
     public Mat GetImage()
     {
         lock (_sourceImageLock)
         {
-            var image = SourceImage.Clone();
+            var image = SourceImageCrop != null ? SourceImage.Clone(SourceImageCrop.Value) : SourceImage.Clone();
             ImageProcessing.ResizeToCover(image, Size);
             ImageProcessing.CropToSizeFromCenter(image, Size);
 
@@ -31,12 +32,13 @@ public class CollageItem
         }
     }
 
-    public void Capture(Mat image)
+    public void Capture(Mat image, Rect crop)
     {
         lock (_sourceImageLock)
         {
             CaptureUtcDate = DateTime.UtcNow;
             _isCaptured = true;
+            SourceImageCrop = crop;
             image.CopyTo(SourceImage);
         }
     }
@@ -46,17 +48,26 @@ public class CollageItem
         lock (_sourceImageLock)
         {
             var mat = new Mat();
-            SourceImage.CopyTo(mat);
+            if (SourceImageCrop != null)
+            {
+                mat = SourceImage.Clone(SourceImageCrop.Value);
+            }
+            else
+            {
+                SourceImage.CopyTo(mat);
+            }
+
             return mat;
         }
     }
 
-    public void UpdateSourceImage(Mat image)
+    public void UpdateSourceImage(Mat image, Rect facesCrop)
     {
         if (!_isCaptured)
         {
             lock (_sourceImageLock)
             {
+                SourceImageCrop = facesCrop;
                 image.CopyTo(SourceImage);
             }
         }

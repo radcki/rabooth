@@ -183,7 +183,8 @@ namespace raBooth.Ui.Views.Main
             _captureTimer.OnElapsed += async (_, _) =>
                                        {
                                            var image = await _frameSource.CaptureStillImage();
-                                           _layout?.CollageLayout.CaptureNextItem(image);
+                                           var facesCrop = _autoCropService.GetCurrentCrop(image);
+                                           _layout?.CollageLayout.CaptureNextItem(image, facesCrop);
                                        };
         }
 
@@ -225,8 +226,9 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
-            var croppedFrame = _autoCropService.GetFrameCroppedToFaces(e.Frame);
-            Layout?.CollageLayout.UpdateNextUncapturedItemSourceImage(croppedFrame);
+            var facesCrop = _autoCropService.GetCurrentCrop(e.Frame);
+            //var croppedFrame = _autoCropService.GetFrameCroppedToFaces(e.Frame);
+            Layout?.CollageLayout.UpdateNextUncapturedItemSourceImage(e.Frame, facesCrop);
             if (Layout != default)
             {
                 var previewMat = Layout.CollageLayout.GetViewWithNextUncapturedItemPreview();
