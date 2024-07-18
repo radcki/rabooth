@@ -13,6 +13,7 @@ using raBooth.Core.Services.FrameSource;
 using raBooth.Core.Services.Printing;
 using raBooth.Core.Services.Storage;
 using raBooth.Core.Services.Web;
+using raBooth.Infrastructure.Services.AutoCrop;
 using raBooth.Infrastructure.Services.FaceDetection;
 using raBooth.Infrastructure.Services.FrameSource;
 using raBooth.Infrastructure.Services.Light;
@@ -20,6 +21,7 @@ using raBooth.Infrastructure.Services.Printing;
 using raBooth.Infrastructure.Services.Storage;
 using raBooth.Infrastructure.Services.Web;
 using raBooth.Ui.Configuration;
+using raBooth.Ui.Infrastructure;
 using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
@@ -76,20 +78,26 @@ namespace raBooth.Ui
             services.Configure<LightsConfiguration>(configuration.GetSection(LightsConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<LightsConfiguration>>().Value);
 
+            services.Configure<AutoCropConfiguration>(configuration.GetSection(AutoCropConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<AutoCropConfiguration>>().Value);
+
             services.AddTransient<ICollageStorageService, WebCollageStorageService>();
             //services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
             services.AddTransient<IWebHostApiClient, WebHostApiClient>();
 
             services.AddTransient<ILayoutGenerationService, GridLayoutGenerationService>();
-            services.AddSingleton<IFrameSource, WebcamFrameSource>();
             services.AddTransient<ILightManager, LightManager>();
             //services.AddTransient<IFaceDetectionService, OnnxFaceDetectionService>();
             services.AddTransient<IFaceDetectionService, CascadeFaceDetectionService>();
             services.AddTransient<PrintService>();
             services.AddTransient<QrCodeService>();
             services.AddTransient<MainWindow>();
-            services.AddSingleton<MainViewModel>();
             services.AddTransient<LayoutSelectionViewModel>();
+
+            services.AddSingleton<IFrameSource, WebcamFrameSource>();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<BackgroundFaceDetector>();
+            services.AddSingleton<AutoCropService>();
         }
 
         private void SetCulture()

@@ -20,9 +20,11 @@ namespace raBooth.Ui
     public partial class MainWindow : Window
     {
         private WindowState _previousWindowState;
+        private MainViewModel _viewModel;
         public MainWindow()
         {
-            DataContext = App.Services.GetRequiredService<MainViewModel>();
+            _viewModel = App.Services.GetRequiredService<MainViewModel>();
+            DataContext = _viewModel;
             InitializeComponent();
         }
 
@@ -49,6 +51,20 @@ namespace raBooth.Ui
                 viewModel.Dispose();
             }
             base.OnClosing(e);
+        }
+
+        /// <inheritdoc />
+        /// <inheritdoc />
+        protected override void OnTouchUp(TouchEventArgs e)
+        {
+            _viewModel.WakeUpApplication();
+            base.OnTouchUp(e);
+        }
+
+        protected override void OnMouseUp(MouseButtonEventArgs e)
+        {
+            _viewModel.WakeUpApplication();
+            base.OnMouseUp(e);
         }
 
         #endregion

@@ -38,22 +38,22 @@ public class CollageLayout
         RedrawViewWithCapturedItems();
     }
 
-    public void CaptureNextItem(Mat image)
+    public void CaptureNextItem(Mat image, Rect crop)
     {
         if (!UncapturedItems.TryDequeue(out var item))
             return;
 
-        item.Capture(image);
+        item.Capture(image, crop);
         DrawItemOnCanvas(ViewWithCapturedItems, item);
         CapturedItems.Push(item);
         LastItemCaptureUtcTime = DateTime.UtcNow;
     }
 
-    public void UpdateNextUncapturedItemSourceImage(Mat image)
+    public void UpdateNextUncapturedItemSourceImage(Mat image, Rect facesCrop)
     {
         if (UncapturedItems.TryPeek(out var item))
         {
-            item.UpdateSourceImage(image);
+            item.UpdateSourceImage(image, facesCrop);
         }
     }
 

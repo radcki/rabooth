@@ -5,9 +5,21 @@ namespace raBooth.Core.Services.FaceDetection;
 public interface IFaceDetectionService
 {
     IEnumerable<DetectedFace> DetectFaces(Mat image);
+    DetectedEyes? DetectEyes(Mat image, DetectedFace detectedFace);
 }
 
-public record DetectedFace(Rect FaceArea);
+public record DetectedFace(Rect FaceArea)
+{
+    public bool IsSameFace(DetectedFace other)
+    {
+        var intersection = FaceArea.Intersect(other.FaceArea);
+        var union = FaceArea.Union(other.FaceArea);
+        var intersectionArea = intersection.Width * intersection.Height;
+        var unionArea = union.Width * union.Height;
+        var overlap = (intersectionArea / (double)unionArea);
+        return overlap > 0.6;
+    }
+};
 
 public record DetectedEyes(DetectedEye LeftEye, DetectedEye RightEye);
 

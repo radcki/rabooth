@@ -16,7 +16,6 @@ using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 using raBooth.Core.Helpers;
 using raBooth.Core.Services.FaceDetection;
-using Point = System.Drawing.Point;
 using Rect = OpenCvSharp.Rect;
 using Size = OpenCvSharp.Size;
 
@@ -46,29 +45,27 @@ namespace raBooth.Infrastructure.Services.FaceDetection
             Cv2.Resize(src, small, new Size(0, 0), faceScaling, faceScaling);
 
             var bitmap = BitmapFromSource(small.ToBitmapSource());
-            var sw = Stopwatch.StartNew();
             var detectionResults = _faceDetector.Forward(bitmap);
-            var t1 = sw.Elapsed.TotalMilliseconds;
-            sw.Restart();
             foreach (var faceDetectionResult in detectionResults)
             {
                 
                 var points = _faceLandmarksExtractor.Forward(bitmap, faceDetectionResult.Box, true);
                 var angle = points.RotationAngle;
 
-                var t2 = sw.Elapsed.TotalMilliseconds;
-                sw.Restart();
-                // alignment
                 var aligned = FaceProcessingExtensions.Align(bitmap, faceDetectionResult.Box, angle);
                  var embeddings = _faceEmbedder.Forward(aligned);
 
                 var faceBox = RectFromRectangle(faceDetectionResult.Box);
 
-                var t3 = sw.Elapsed.TotalMilliseconds;
-                sw.Restart();
                 var faceArea = ImageProcessing.ScaleRect(faceBox, 1 / faceScaling);
                 yield return new DetectedFace(faceArea);
             }
+        }
+
+        /// <inheritdoc />
+        public DetectedEyes? DetectEyes(Mat image, DetectedFace detectedFace)
+        {
+            throw new NotImplementedException();
         }
 
         public static BitmapSource ConvertBitmap(Bitmap source)
