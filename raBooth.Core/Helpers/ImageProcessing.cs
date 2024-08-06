@@ -37,6 +37,34 @@ namespace raBooth.Core.Helpers
             var interpolation = enlargeRequired ? InterpolationFlags.Cubic : InterpolationFlags.Area;
             Cv2.Resize(image, image, new(), scalingRatio, scalingRatio, interpolation);
         }
+        public static Mat ResizeToCoverToNew(Mat image, Size size)
+        {
+            if (size == default)
+            {
+                return image.Clone();
+            }
+            if (image.Rows == 0 || image.Cols == 0)
+            {
+                var emptyImage = new Mat(size, MatType.CV_8UC3, new Scalar(255, 255, 255));
+                return emptyImage;
+            }
+            var wScalingRatio = (float)size.Width / image.Cols;
+            var hScalingRatio = (float)size.Height / image.Rows;
+
+            var noScalingRequired = Math.Abs(wScalingRatio - 1) < 0.001f && Math.Abs(hScalingRatio - 1) < 0.001f;
+            if (noScalingRequired)
+            {
+                return image.Clone();
+            }
+
+            var scalingRatio = Math.Max(wScalingRatio, hScalingRatio);
+
+            var enlargeRequired = scalingRatio > 0;
+            var interpolation = enlargeRequired ? InterpolationFlags.Cubic : InterpolationFlags.Area;
+            var newMat = new Mat();
+            Cv2.Resize(image, newMat, new(), scalingRatio, scalingRatio, interpolation);
+            return newMat;
+        }
 
         public static void CropToSizeFromCenter(Mat image, Size size)
         {

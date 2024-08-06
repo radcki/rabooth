@@ -32,8 +32,7 @@ namespace raBooth.Ui.Infrastructure
             return Task.Run(() =>
                             {
                                 _isFaceDetectionInProgress = true;
-                                var cameraPreviewMat = frame.Clone();
-                                var faces = _faceDetectionService.DetectFaces(cameraPreviewMat).ToList();
+                                var faces = _faceDetectionService.DetectFaces(frame).ToList();
                                 _visibleFacesCount.Update(faces.Count);
 
                                 var toAdd = faces.Where(newFace => _visibleFaces.All(oldFace => !oldFace.IsSameFace(newFace))).ToList();
