@@ -226,11 +226,10 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
-            var facesCrop = _autoCropService.GetCurrentCrop(e.Frame);
-            //var croppedFrame = _autoCropService.GetFrameCroppedToFaces(e.Frame);
-            Layout?.CollageLayout.UpdateNextUncapturedItemSourceImage(e.Frame, facesCrop);
             if (Layout != default)
             {
+                var facesCrop = _autoCropService.GetCurrentCrop(e.Frame);
+                Layout?.CollageLayout.UpdateNextUncapturedItemSourceImage(e.Frame, facesCrop);
                 var previewMat = Layout.CollageLayout.GetViewWithNextUncapturedItemPreview();
 
                 App.Current?.Dispatcher.Invoke(() => { Preview = previewMat.ToBitmapSource(); });
@@ -239,11 +238,9 @@ namespace raBooth.Ui.Views.Main
 
         private Task UpdateCameraPreview(Mat frame)
         {
-            FaceDetector.SubmitNewFrame(frame);
-            var cameraPreviewMat = frame.Clone();
-
-            ImageProcessing.ResizeToCover(cameraPreviewMat, new Size(WindowWidth, WindowHeight));
+            var cameraPreviewMat = ImageProcessing.ResizeToCoverToNew(frame, new Size(WindowWidth, WindowHeight));
             App.Current?.Dispatcher.Invoke(() => { CameraPreview = cameraPreviewMat.ToBitmapSource(); });
+            FaceDetector.SubmitNewFrame(frame);
             return Task.CompletedTask;
         }
 
@@ -276,7 +273,6 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _cancelCommandCountdownSecondsRemaining, value);
         }
 
-        public BackgroundFaceDetector FaceDetector { get; init; }
 
         public bool LayoutSelectionVisible
         {
@@ -395,14 +391,13 @@ namespace raBooth.Ui.Views.Main
         public IRelayCommand ResetCommand => new AsyncRelayCommand(ExecuteResetCommand);
         public IRelayCommand SaveCommand => new AsyncRelayCommand(ExecuteSaveCommand);
         public IRelayCommand WakUpCommand => new AsyncRelayCommand(WakeUpCommandExecute);
+        public IRelayCommand RecaptureCommand => new AsyncRelayCommand(ExecuteRecaptureCommand);
+        public BackgroundFaceDetector FaceDetector { get; init; }
 
         private Task WakeUpCommandExecute()
         {
             return Task.Run(WakeUpApplication);
         }
-
-        public IRelayCommand RecaptureCommand => new AsyncRelayCommand(ExecuteRecaptureCommand);
-
 
         private void UpdateComponentsVisibility()
         {

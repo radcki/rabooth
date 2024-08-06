@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,10 +14,6 @@ namespace raBooth.Infrastructure.Services.FrameSource
         public int DeviceId { get; init; }
         public int FrameWidth { get; init; } = 1280;
         public int FrameHeight { get; init; } = 720;
-        public int CropTop { get; init; } = 0;
-        public int CropBottom { get; init; } = 0;
-        public int CropLeft { get; init; } = 0;
-        public int CropRight { get; init; } = 0;
     }
 
     public class WebcamFrameSource : IFrameSource
@@ -41,24 +38,22 @@ namespace raBooth.Infrastructure.Services.FrameSource
                          {
                              _cancellationTokenSource = new CancellationTokenSource();
                              _isRunning = true;
-                             _videoCapture = new VideoCapture(_configuration.DeviceId);
+                             _videoCapture = new VideoCapture(_configuration.DeviceId, VideoCaptureAPIs.DSHOW);
                              _videoCapture.Set(VideoCaptureProperties.FrameWidth, _configuration.FrameWidth);
                              _videoCapture.Set(VideoCaptureProperties.FrameHeight, _configuration.FrameHeight);
                              try
                              {
+                                 using var cameraFrame = new Mat();
                                  while (!_cancellationTokenSource.Token.IsCancellationRequested)
                                  {
-                                     using var frame = new Mat();
-                                     if (_videoCapture.Read(frame))
+                                     
+                                     if (_videoCapture.Read(cameraFrame))
                                      {
-                                         var croppedFrame = new Mat();
-                                         long imageSize = frame.Rows * frame.Cols * 4;
-                                         GC.AddMemoryPressure(imageSize);
-                                         frame[_configuration.CropTop, frame.Height - _configuration.CropBottom, _configuration.CropLeft, frame.Width - _configuration.CropRight].CopyTo(croppedFrame);
- 
-                                         frame.CopyTo(croppedFrame);
-                                         _latestFrame = croppedFrame;
-                                         _ = Task.Run(() => { LiveViewFrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(croppedFrame)); });
+                                         var latestFrame = new Mat();
+                                         cameraFrame.CopyTo(latestFrame);
+
+                                         _latestFrame = latestFrame;
+                                         LiveViewFrameAcquired?.Invoke(this, new FrameAcquiredEventArgs(latestFrame));
                                      }
                                  }
                              }
@@ -67,10 +62,12 @@ namespace raBooth.Infrastructure.Services.FrameSource
                                  Console.WriteLine(e);
                                  throw;
                              }
-
-                             _isRunning = false;
-                             _videoCapture.Release();
-                             _videoCapture.Dispose();
+                             finally
+                             {
+                                 _isRunning = false;
+                                 _videoCapture.Release();
+                                 _videoCapture.Dispose();
+                             }
                          });
         }
 
@@ -89,7 +86,7 @@ namespace raBooth.Infrastructure.Services.FrameSource
 
         public Task<Mat> CaptureStillImage()
         {
-            return Task.FromResult(_latestFrame ?? new Mat());
+            return Task.FromResult(_latestFrame.Clone() ?? new Mat());
         }
 
         public event EventHandler<FrameAcquiredEventArgs>? LiveViewFrameAcquired;

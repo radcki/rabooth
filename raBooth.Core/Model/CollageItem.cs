@@ -78,6 +78,7 @@ public class CollageItem
         lock (_sourceImageLock)
         {
             _isCaptured = false;
+            SourceImageCrop = null;
             SourceImage = new Mat();
         }
     }

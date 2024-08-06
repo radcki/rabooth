@@ -69,7 +69,7 @@
         >-->
         <Grid>
             <Image ClipToBounds="True" Source="{Binding Path=CameraPreview}" HorizontalAlignment="Center"
-                   VerticalAlignment="Center" Stretch="UniformToFill">
+                   VerticalAlignment="Center" Stretch="None">
             </Image>
             <!--<Border BorderBrush="GhostWhite" BorderThickness="50" CornerRadius="100" Margin="0"></Border>-->
             <!--<Border BorderBrush="GhostWhite" BorderThickness="50" CornerRadius="0" Margin="0"></Border>-->
