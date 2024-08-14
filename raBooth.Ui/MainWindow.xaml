@@ -88,7 +88,7 @@
 
                         <Label Foreground="White" FontFamily="Mrs Saint Delafield" HorizontalAlignment="Center"
                                VerticalAlignment="Bottom"
-                               Margin="100 150 100 100" FontSize="280" Content="Fotobudka">
+                               Margin="100 150 100 100" FontSize="280" Content="{x:Static local:Resources.Photobooth}">
                             <Label.Effect>
                                 <DropShadowEffect BlurRadius="5"
                                                   ShadowDepth="5"
@@ -229,6 +229,15 @@
                                                 </TextBlock>
 
                                             </StackPanel>
+                                            <TextBlock
+                                                Visibility="{Binding Path=CaptureFinishedMessageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                FontSize="100"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Margin="0 0 0 0"
+                                                Text="{x:Static local:Resources.Finished}"
+                                                Foreground="Black">
+                                            </TextBlock>
                                             <fa:ImageAwesome
                                                 Visibility="{Binding Path=CollagePageQrCodeSpinnerVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 Icon="Spinner"

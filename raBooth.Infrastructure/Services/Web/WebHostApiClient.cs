@@ -27,6 +27,7 @@ namespace raBooth.Infrastructure.Services.Web
             //request.AddJsonBody(command);
 
             var request = new RestRequest("api/collage/create", Method.Post) { RequestFormat = DataFormat.Json, AlwaysMultipartFormData = true };
+            request.AddParameter(nameof(command.CollageId), command.CollageId.ToString());
             request.AddParameter(nameof(command.CaptureDate), command.CaptureDate.ToString("u"));
             request.AddFile(nameof(command.Image), command.Image, "collage.jpg");
 

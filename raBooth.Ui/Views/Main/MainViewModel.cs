@@ -65,6 +65,7 @@ namespace raBooth.Ui.Views.Main
         private bool _cameraPreviewVisible;
         private bool _titleVisible;
         private List<DetectedFace> _detectedFaces = [];
+        private bool _captureFinishedMessageVisible;
 
         public MainViewModel(IFrameSource frameSource,
                              ILayoutGenerationService gridLayoutGenerationService,
@@ -286,6 +287,12 @@ namespace raBooth.Ui.Views.Main
             set => SetProperty(ref _captureCountdownSecondsRemainingVisible, value);
         }
 
+        public bool CaptureFinishedMessageVisible
+        {
+            get => _captureFinishedMessageVisible;
+            set => SetProperty(ref _captureFinishedMessageVisible, value);
+        }
+
         public bool CancelCommandCountdownVisible
         {
             get => _cancelCommandCountdownVisible;
@@ -490,6 +497,7 @@ namespace raBooth.Ui.Views.Main
                 PrintButtonEnabled = false;
                 GetReadyMessageVisible = true;
                 CollagePreviewVisible = false;
+                CaptureFinishedMessageVisible = false;
                 await _lightManager.SetLightsToHighBrightness();
                 await Task.Delay(_captureConfiguration.GetReadyMessageDisplayTime);
                 GetReadyMessageVisible = false;
@@ -560,6 +568,12 @@ namespace raBooth.Ui.Views.Main
             _ = Task.Run(async () =>
                          {
                              await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
+                             CollagePageQrCodeSpinnerVisible = false;
+                             if (!CollagePageQrCodeVisible)
+                             {
+                                 CaptureFinishedMessageVisible = true;
+                             }
+
                              progress.ProgressChanged -= OnStoreCollageProgressChanged;
                          });
         }
