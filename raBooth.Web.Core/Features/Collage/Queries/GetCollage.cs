@@ -9,9 +9,8 @@ namespace raBooth.Web.Core.Features.Collage.Queries
     {
         public record Command(Guid CollageId) : IRequest<Result>;
 
-        public class Result() : BaseResponse
+        public record Result(CollageDto Collage) : BaseResponse
         {
-            public CollageDto Collage { get; init; }
         }
 
         public class CollageDto
@@ -57,10 +56,7 @@ namespace raBooth.Web.Core.Features.Collage.Queries
                     }).ToList()
                 };
 
-                return new Result
-                {
-                    Collage = dto
-                };
+                return new Result(dto);
             }
         }
     }

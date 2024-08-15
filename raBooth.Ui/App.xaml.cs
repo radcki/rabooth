@@ -54,7 +54,7 @@ namespace raBooth.Ui
 
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            
+            services.AddLogging();
 
 
             services.Configure<WebcamFrameSourceConfiguration>(configuration.GetSection(nameof(WebcamFrameSourceConfiguration)));
@@ -81,7 +81,10 @@ namespace raBooth.Ui
             services.Configure<AutoCropConfiguration>(configuration.GetSection(AutoCropConfiguration.SectionName));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<AutoCropConfiguration>>().Value);
 
-            services.AddTransient<ICollageStorageService, WebCollageStorageService>();
+            services.Configure<CollageStorageConfiguration>(configuration.GetSection(CollageStorageConfiguration.SectionName));
+            services.AddSingleton(provider => provider.GetRequiredService<IOptions<CollageStorageConfiguration>>().Value);
+
+            services.AddTransient<ICollageStorageService, CollageStorageService>();
             //services.AddTransient<IWebHostApiClient, FakeWebHostApiClient>();
             services.AddTransient<IWebHostApiClient, WebHostApiClient>();
 

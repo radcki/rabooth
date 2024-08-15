@@ -123,6 +123,12 @@
   <data name="Close" xml:space="preserve">
     <value>Zamknij</value>
   </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Koniec</value>
+  </data>
+  <data name="Photobooth" xml:space="preserve">
+    <value>Fotobudka</value>
+  </data>
   <data name="Print" xml:space="preserve">
     <value>Drukuj</value>
   </data>

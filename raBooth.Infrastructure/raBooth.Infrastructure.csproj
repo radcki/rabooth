@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <PackageReference Include="FaceONNX" Version="4.0.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.15.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

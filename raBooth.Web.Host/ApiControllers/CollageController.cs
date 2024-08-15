@@ -19,7 +19,7 @@ namespace raBooth.Web.Host.ApiControllers
         public async Task<CreateCollageCommandResponse> Create([FromForm] CreateCollageCommandRequest request, CancellationToken cancellationToken)
         {
             var fileEnvelope = fileMapper.MapFormFile(request.Image);
-            var command = new CreateCollage.Command(request.CaptureDate, fileEnvelope);
+            var command = new CreateCollage.Command(request.CollageId, request.CaptureDate, fileEnvelope);
             var result = await mediator.Send(command, cancellationToken);
             var viewUrl = Url.Page(@"/Collage", new { CollageId = result.CollageId });
             return new CreateCollageCommandResponse
