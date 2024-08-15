@@ -40,7 +40,7 @@ a.btn:hover {
 a.btn:active {
     text-decoration: none;
 }
-.image .btn {
+.image {
     display: block;
     max-height: 90vh;
     max-width: 95%;
