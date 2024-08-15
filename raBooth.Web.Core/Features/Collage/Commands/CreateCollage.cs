@@ -9,7 +9,7 @@ public class CreateCollage
 {
     public record Command(Guid CollageId, DateTime CaptureDate, FileDto Image) : IRequest<Result>;
 
-    public class Result() : BaseResponse
+    public record Result() : BaseResponse
     {
         public Guid CollageId { get; init; }
     }

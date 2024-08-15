@@ -1,0 +1,27 @@
+﻿@page
+@model raBooth.Web.Host.Pages.CollageListModel
+@{
+    <div>
+
+        @foreach (var collage in Model.Collages)
+        {
+            <a class="item" href="@Url.Page("Collage", "Collage", new { collageId = collage.CollageId })">
+                <img class="image shadow-3" src="@Url.Action("GetPhotoData", "Collage", new { collageId = collage.CollageId, photoId = collage.CollagePhoto.PhotoId })"/>
+            </a>
+        }
+    </div>
+
+    <div class="item">
+        @if (Model.PageIndex > 1)
+        {
+            <a class="btn" href="@Url.Page("CollageList", new { Date = Model.Date, PageIndex = Model.PageIndex - 1, PageSize = Model.PageSize })">
+                <span class="mdi mdi-chevron-left"></span>
+            </a>
+        }
+        @if (Model.PageIndex < Model.TotalPages)
+        {
+            <a class="btn" href="@Url.Page("CollageList", new { Date = Model.Date, PageIndex = Model.PageIndex + 1, PageSize = Model.PageSize })">
+                <span class="mdi mdi-chevron-right"></span>
+            </a>
+        }
+    </div>}

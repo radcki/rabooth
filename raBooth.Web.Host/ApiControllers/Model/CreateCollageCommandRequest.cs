@@ -2,6 +2,7 @@
 {
     public class CreateCollageCommandRequest
     {
+        public Guid CollageId { get; set; }
         public DateTime CaptureDate { get; set; }
         public IFormFile Image { get; set; }
     }

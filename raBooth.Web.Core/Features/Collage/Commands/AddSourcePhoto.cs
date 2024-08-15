@@ -10,7 +10,7 @@ public class AddSourcePhoto
 {
     public record Command(Guid CollageId, FileDto FileDto, DateTime CaptureDate) : IRequest<Result>;
 
-    public class Result : BaseResponse
+    public record Result : BaseResponse
     {
     }
 

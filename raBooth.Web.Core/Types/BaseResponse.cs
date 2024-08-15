@@ -1,6 +1,6 @@
 ﻿namespace raBooth.Web.Core.Types
 {
-    public abstract class BaseResponse
+    public abstract record BaseResponse
     {
         public DateTime ServerTime => DateTime.Now;
     }
