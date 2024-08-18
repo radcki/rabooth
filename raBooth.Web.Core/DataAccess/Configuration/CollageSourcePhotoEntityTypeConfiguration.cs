@@ -10,5 +10,6 @@ public class CollageSourcePhotoEntityTypeConfiguration : IEntityTypeConfiguratio
     {
         builder.HasKey(x => x.CollageSourcePhotoId);
         builder.Property(x => x.CollageSourcePhotoId).ValueGeneratedOnAdd();
+        builder.HasQueryFilter(x => !x.Deleted);
     }
 }
