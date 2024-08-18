@@ -13,6 +13,7 @@ namespace raBooth.Web.Core.DataAccess.Configuration
 
             builder.OwnsOne(x => x.CollagePhoto);
             builder.HasMany(x => x.SourcePhotos).WithOne().HasForeignKey(x => x.CollageId);
+            builder.HasQueryFilter(x => !x.Deleted);
         }
     }
 }
