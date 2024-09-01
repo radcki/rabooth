@@ -33,8 +33,8 @@ namespace raBooth.Ui.Views.Main
         private readonly ICollageStorageService _collageStorageService;
         private readonly QrCodeService _qrCodeService;
         private readonly ILightManager _lightManager;
-        private readonly IFaceDetectionService _faceDetectionService;
-        private readonly FaceAlignmentService _faceAlignmentService;
+        //private readonly IFaceDetectionService _faceDetectionService;
+        //private readonly FaceAlignmentService _faceAlignmentService;
         private readonly AutoCropService _autoCropService;
 
         private BitmapSource? _preview;
@@ -50,7 +50,6 @@ namespace raBooth.Ui.Views.Main
 
         private CancellationTokenSource _collageCaptureCancellationTokenSource = new CancellationTokenSource();
         private CancellationTokenSource _cancelCancellationTokenSource = new CancellationTokenSource();
-        private CancellationTokenSource _cancelStorageCancellationTokenSource = new CancellationTokenSource();
         private bool _captureCountdownSecondsRemainingVisible;
         private int _cancelCommandCountdownSecondsRemaining;
         private bool _cancelCommandCountdownVisible;
@@ -75,7 +74,7 @@ namespace raBooth.Ui.Views.Main
                              QrCodeService qrCodeService,
                              CaptureConfiguration captureConfiguration,
                              ILightManager lightManager,
-                             IFaceDetectionService faceDetectionService,
+                             //IFaceDetectionService faceDetectionService,
                              BackgroundFaceDetector faceDetector,
                              UiConfiguration uiConfiguration,
                              AutoCropService autoCropService)
@@ -88,11 +87,11 @@ namespace raBooth.Ui.Views.Main
             _qrCodeService = qrCodeService;
             _captureConfiguration = captureConfiguration;
             _lightManager = lightManager;
-            _faceDetectionService = faceDetectionService;
+            //_faceDetectionService = faceDetectionService;
             FaceDetector = faceDetector;
             _uiConfiguration = uiConfiguration;
             _autoCropService = autoCropService;
-            _faceAlignmentService = new FaceAlignmentService(faceDetectionService);
+            //_faceAlignmentService = new FaceAlignmentService(faceDetectionService);
             LayoutSelectionViewModel = App.Services.GetRequiredService<LayoutSelectionViewModel>();
 
 
@@ -463,17 +462,23 @@ namespace raBooth.Ui.Views.Main
                 await _collageCaptureCancellationTokenSource.CancelAsync();
             }
 
+            if (_cancelCancellationTokenSource.Token.CanBeCanceled)
+            {
+                await _cancelCancellationTokenSource.CancelAsync();
+            }
+
             if (_captureTimer.IsInProgress)
             {
                 _captureTimer.Cancel();
             }
 
-            Layout.CollageLayout.Clear();
+            Layout.ReplaceLayout(_gridLayoutGenerationService.GenerateLayout(Layout.CollageLayout.Definition));
             Layout = default;
 
             RecaptureButtonEnabled = false;
             PrintButtonEnabled = false;
             CancelCommandCountdownVisible = false;
+            CollagePageUrlQrCode = default;
         }
 
         private async Task ExecuteStopCommand()
@@ -561,13 +566,12 @@ namespace raBooth.Ui.Views.Main
                 return;
             }
 
-            _cancelStorageCancellationTokenSource = new CancellationTokenSource();
             var progress = new Progress<StoreCollageProgress>();
             progress.ProgressChanged += OnStoreCollageProgressChanged;
             CollagePageQrCodeSpinnerVisible = true;
             _ = Task.Run(async () =>
                          {
-                             await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, _cancelCancellationTokenSource.Token);
+                             await _collageStorageService.StoreCollage(Layout.CollageLayout, progress, CancellationToken.None);
                              CollagePageQrCodeSpinnerVisible = false;
                              if (!CollagePageQrCodeVisible)
                              {
@@ -601,7 +605,6 @@ namespace raBooth.Ui.Views.Main
             _frameSource.Dispose();
             _collageCaptureCancellationTokenSource.Dispose();
             _cancelCancellationTokenSource.Dispose();
-            _cancelStorageCancellationTokenSource.Dispose();
         }
 
         #endregion
