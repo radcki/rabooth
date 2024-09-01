@@ -21,6 +21,7 @@ namespace raBooth.Infrastructure.Services.Storage
             var requestToMake = 1 + collageItems.Count;
             var requestsDone = 0;
             string pageUrl = null;
+
             cancellationToken.ThrowIfCancellationRequested();
             progress.Report(new StoreCollageProgress(requestsDone, requestToMake, executionTime.Elapsed, null));
             if (configuration.LocalStorageEnabled)
@@ -47,6 +48,7 @@ namespace raBooth.Infrastructure.Services.Storage
             {
                 var sourceItemImage = collageItem.GetSourceImage();
                 var sourceItemImageData = ImageProcessing.EncodeToJpg(sourceItemImage);
+
                 cancellationToken.ThrowIfCancellationRequested();
                 if (configuration.LocalStorageEnabled)
                 {

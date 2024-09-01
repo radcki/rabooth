@@ -26,6 +26,7 @@ using raBooth.Ui.Services.QrCode;
 using raBooth.Ui.UserControls.LayoutSelection;
 using raBooth.Ui.Views.Main;
 using ILightManager = raBooth.Core.Services.Light.ILightManager;
+using Serilog;
 
 namespace raBooth.Ui
 {
@@ -39,6 +40,12 @@ namespace raBooth.Ui
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .WriteTo.Debug()
+                        .WriteTo.File("C:\\logs\\rabooth\\rabooth.txt", rollingInterval: RollingInterval.Day)
+                        .CreateLogger();
+
             var builder = new ConfigurationBuilder()
                          .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                          .AddUserSecrets(GetType().Assembly, true);
@@ -55,7 +62,7 @@ namespace raBooth.Ui
         private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddLogging();
-
+            services.AddSerilog();
 
             services.Configure<WebcamFrameSourceConfiguration>(configuration.GetSection(nameof(WebcamFrameSourceConfiguration)));
             services.AddSingleton(provider => provider.GetRequiredService<IOptions<WebcamFrameSourceConfiguration>>().Value);

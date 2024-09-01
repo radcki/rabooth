@@ -48,5 +48,10 @@ namespace raBooth.Ui.Model
             get => _preview;
             private set => SetProperty(ref _preview, value);
         }
+
+        public void ReplaceLayout(CollageLayout layout)
+        {
+            CollageLayout = layout;
+        }
     }
 }
