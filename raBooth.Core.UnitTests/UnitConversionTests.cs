@@ -51,7 +51,7 @@ namespace raBooth.Core.UnitTests
             foreach (string test in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
             {
                 string path = test.Trim();
-                if (!String.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, exe)))
+                if (!string.IsNullOrEmpty(path) && File.Exists(path = Path.Combine(path, exe)))
                     yield return Path.GetFullPath(path);
             }
         }

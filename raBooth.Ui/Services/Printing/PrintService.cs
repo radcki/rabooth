@@ -65,7 +65,7 @@ namespace raBooth.Infrastructure.Services.Printing
             }
         }
 
-        public static PageSettings GetPrinterPageInfo(String printerName)
+        public static PageSettings GetPrinterPageInfo(string printerName)
         {
             PrinterSettings settings;
 

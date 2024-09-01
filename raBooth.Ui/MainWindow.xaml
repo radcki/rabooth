@@ -112,7 +112,7 @@
                     <StackPanel Orientation="Vertical">
 
                         <Label Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Bottom"
-                               Margin="0 0 0 0" FontSize="80" Content="{x:Static local:Resources.SelectLayout}">
+                               Margin="0 0 0 0" FontSize="180" Content="{x:Static local:Resources.SelectLayout}">
                             <Label.Effect>
                                 <DropShadowEffect BlurRadius="5"
                                                   ShadowDepth="5"
